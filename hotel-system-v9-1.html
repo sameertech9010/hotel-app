@@ -1,0 +1,1694 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>HotelPro — Smart Restaurant System</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Mukta:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<style>
+:root{
+  --bg:#0b0b10;--s1:#13131c;--s2:#1a1a26;--s3:#222230;
+  --br:#2a2a3a;--br2:#333348;
+  --red:#ff4757;--orange:#ffa502;--teal:#2ed573;--blue:#1e90ff;--purple:#a29bfe;
+  --text:#eeeef5;--text2:#9090aa;--text3:#55556a;
+  --r:14px;--r2:10px;--r3:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow-x:hidden}
+body{font-family:'Mukta',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+h1,h2,h3,.num,.logo-t{font-family:'Baloo 2',sans-serif}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-thumb{background:var(--br2);border-radius:3px}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--s2);border:1px solid var(--br2);color:var(--text);padding:11px 22px;border-radius:40px;font-size:13px;font-weight:600;z-index:9999;opacity:0;pointer-events:none;transition:all .25s;white-space:nowrap;max-width:90vw;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* LANG BTN */
+.lang-btn{position:fixed;top:12px;right:12px;z-index:8000;background:var(--s2);border:1px solid var(--br);color:var(--text2);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Baloo 2',sans-serif}
+.lang-btn:hover{border-color:var(--blue);color:var(--blue)}
+
+/* PAGES */
+.page{display:none;min-height:100vh}
+.page.on{display:block}
+.page.flex-page{display:none;min-height:100vh;align-items:center;justify-content:center}
+.page.flex-page.on{display:flex}
+
+/* REGISTER */
+.reg-wrap{width:100%;max-width:480px;padding:1.5rem}
+.reg-card{background:var(--s1);border:1px solid var(--br);border-radius:20px;padding:2rem}
+.reg-top{text-align:center;margin-bottom:1.5rem}
+.reg-emoji{font-size:56px;display:block;margin-bottom:10px;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.reg-top h2{font-size:24px;font-weight:800;color:#fff}
+.reg-top p{color:var(--text2);font-size:13px;margin-top:4px}
+.section-head{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin:18px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--br)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fld{margin-bottom:10px}
+.fld label{font-size:11px;font-weight:700;color:var(--text2);display:block;margin-bottom:5px}
+.fld input,.fld select,.fld textarea{width:100%;padding:10px 13px;background:var(--s2);border:1.5px solid var(--br);border-radius:var(--r2);color:var(--text);font-size:14px;font-family:'Mukta',sans-serif;outline:none;transition:border .2s}
+.fld input:focus,.fld select:focus{border-color:var(--blue)}
+.fld select option{background:var(--s2)}
+.pin-hint{font-size:11px;color:var(--text3);margin-top:3px}
+
+/* BUTTONS */
+.btn{padding:11px 18px;border-radius:var(--r2);border:none;cursor:pointer;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:6px;transition:all .15s;font-family:'Mukta',sans-serif;justify-content:center;white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#e83547}
+.btn-green{background:var(--teal);color:#0b0b10}.btn-green:hover{opacity:.9}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#1878d4}
+.btn-orange{background:var(--orange);color:#0b0b10}.btn-orange:hover{opacity:.9}
+.btn-ghost{background:var(--s2);border:1.5px solid var(--br);color:var(--text2)}.btn-ghost:hover{border-color:var(--red);color:var(--red)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-block{width:100%;margin-top:12px}
+.btn-danger{background:rgba(255,71,87,.12);color:var(--red);border:1px solid rgba(255,71,87,.3)}.btn-danger:hover{background:rgba(255,71,87,.2)}
+
+/* SUCCESS */
+.success-wrap{width:100%;max-width:480px;padding:1.5rem}
+.success-card{background:var(--s1);border:1px solid var(--br);border-radius:20px;padding:2rem;text-align:center}
+.success-icon{font-size:64px;margin-bottom:12px}
+.success-card h2{font-size:22px;font-weight:800;color:var(--teal)}
+.url-box{background:var(--s2);border:1px solid var(--br);border-radius:var(--r2);padding:10px 12px;font-size:11px;color:var(--text2);word-break:break-all;font-family:monospace;line-height:1.6;text-align:left;margin-top:8px}
+
+/* LOGIN */
+.glogin-wrap{width:100%;max-width:440px;padding:1rem}
+.glogin-card{background:var(--s1);border:1px solid var(--br);border-radius:20px;padding:1.5rem;text-align:center}
+.glogin-card .logo-emoji{font-size:52px;display:block;margin-bottom:10px}
+.glogin-card h2{font-size:20px;font-weight:800;color:#fff}
+
+/* PIN DOTS */
+.pin-row{display:flex;justify-content:center;gap:10px;margin:8px 0}
+.pdot{width:14px;height:14px;border-radius:50%;background:var(--br2);transition:background .15s}
+.pdot.on{background:var(--red)}
+
+/* CUSTOMER LANDING */
+.cust-land{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center;background:radial-gradient(ellipse at 40% 0%,#1a0808 0%,var(--bg) 70%)}
+.cland-emoji{font-size:80px;animation:float 3s ease-in-out infinite;filter:drop-shadow(0 0 24px rgba(255,71,87,.35))}
+.cland-name{font-size:30px;font-weight:800;color:#fff;margin:14px 0 4px}
+.cland-addr{color:var(--text2);font-size:13px;margin-bottom:6px}
+.cland-table-sel{background:var(--s1);border:1px solid var(--br);border-radius:20px;padding:1.2rem;margin:12px 0;width:100%;max-width:360px;text-align:left}
+.cland-table-sel h3{font-size:13px;font-weight:700;color:var(--text2);margin-bottom:10px}
+.table-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tsel-btn{background:var(--s2);border:2px solid var(--br);border-radius:10px;padding:10px 4px;cursor:pointer;text-align:center;transition:all .2s}
+.tsel-btn:hover,.tsel-btn.picked{border-color:var(--red);background:rgba(255,71,87,.08)}
+.tsel-btn .tn{font-family:'Baloo 2',sans-serif;font-size:16px;font-weight:800;color:#fff}
+.tsel-btn .ts{font-size:10px;color:var(--text3);margin-top:1px}
+.tsel-btn.t-ord .ts{color:var(--orange)}
+.tsel-btn.t-ready .ts{color:var(--teal)}
+.cland-cta{background:var(--red);color:#fff;border:none;padding:16px 36px;border-radius:50px;font-size:17px;font-weight:700;font-family:'Baloo 2',sans-serif;cursor:pointer;box-shadow:0 4px 28px rgba(255,71,87,.35);transition:all .2s;width:100%;max-width:360px;margin-top:8px}
+.cland-cta:hover{transform:translateY(-2px)}
+.cland-cta:disabled{opacity:.5;cursor:default;transform:none}
+
+/* APP SHELL */
+#app-shell{display:none;flex-direction:column;min-height:100vh}
+#app-shell.on{display:flex}
+.appbar{background:var(--s1);border-bottom:1px solid var(--br);padding:11px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
+.appbar-left{display:flex;align-items:center;gap:8px}
+.appbar-name{font-family:'Baloo 2',sans-serif;font-size:16px;font-weight:800;color:#fff}
+.appbar-right{display:flex;align-items:center;gap:8px}
+.role-chip{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(255,71,87,.12);color:var(--red);border:1px solid rgba(255,71,87,.25)}
+.live-ind{font-size:12px;color:var(--text3)}
+.nav-bar{background:var(--s1);border-bottom:1px solid var(--br);display:flex;overflow-x:auto;padding:0 4px;-webkit-overflow-scrolling:touch}
+.nav-bar::-webkit-scrollbar{display:none}
+.ntab{padding:12px 16px;font-size:13px;font-weight:700;border:none;background:transparent;cursor:pointer;color:var(--text2);border-bottom:3px solid transparent;white-space:nowrap;flex-shrink:0;font-family:'Baloo 2',sans-serif;transition:all .15s}
+.ntab.on{color:var(--red);border-bottom-color:var(--red)}
+.view-wrap{flex:1;padding:1rem;max-width:960px;margin:0 auto;width:100%}
+
+/* CUSTOMER SHELL */
+#cust-shell{display:none;flex-direction:column;min-height:100vh}
+#cust-shell.on{display:flex}
+
+/* CARDS */
+.card{background:var(--s1);border:1px solid var(--br);border-radius:var(--r);padding:1rem 1.2rem;margin-bottom:1rem}
+.card-title{font-family:'Baloo 2',sans-serif;font-size:16px;font-weight:800;color:#fff;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
+
+/* STATS */
+.sg{display:grid;gap:10px;margin-bottom:1rem}
+.sg2{grid-template-columns:1fr 1fr}
+.sg3{grid-template-columns:repeat(3,1fr)}
+.sg4{grid-template-columns:repeat(4,1fr)}
+.sbox{background:var(--s2);border:1px solid var(--br);border-radius:var(--r);padding:14px;text-align:center}
+.snum{font-family:'Baloo 2',sans-serif;font-size:26px;font-weight:800;line-height:1}
+.sbox.red .snum{color:var(--red)}.sbox.orange .snum{color:var(--orange)}.sbox.green .snum{color:var(--teal)}.sbox.blue .snum{color:var(--blue)}
+.slbl{font-size:11px;color:var(--text2);margin-top:4px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+
+/* BADGES */
+.bdg{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.4px}
+.b-amber{background:rgba(255,165,2,.12);color:var(--orange);border:1px solid rgba(255,165,2,.3)}
+.b-blue{background:rgba(30,144,255,.12);color:var(--blue);border:1px solid rgba(30,144,255,.3)}
+.b-green{background:rgba(46,213,115,.12);color:var(--teal);border:1px solid rgba(46,213,115,.3)}
+.b-red{background:rgba(255,71,87,.12);color:var(--red);border:1px solid rgba(255,71,87,.3)}
+.b-gray{background:var(--s3);color:var(--text3);border:1px solid var(--br)}
+.b-purple{background:rgba(162,155,254,.12);color:var(--purple);border:1px solid rgba(162,155,254,.3)}
+
+/* ORDER CARDS */
+.ocard{background:var(--s2);border:1.5px solid var(--br);border-radius:var(--r);padding:14px;margin-bottom:10px}
+.ocard.urgent{border-color:var(--red);box-shadow:0 0 18px rgba(255,71,87,.1)}
+.ocard.cooking{border-color:var(--orange)}
+.ocard.ready-c{border-color:var(--teal)}
+
+/* MENU ITEMS */
+.mitem{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--br)}
+.mitem:last-child{border-bottom:none}
+.mn{font-size:14px;font-weight:700;color:#fff}
+.md{font-size:11px;color:var(--text3);margin-top:2px}
+.qctrl{display:flex;align-items:center;gap:10px}
+.qbtn{width:32px;height:32px;border-radius:50%;border:2px solid var(--br);background:var(--s3);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--text2);line-height:1;transition:all .15s}
+.qbtn:hover{background:var(--red);border-color:var(--red);color:#fff}
+.qnum{font-size:15px;font-weight:800;min-width:20px;text-align:center;font-family:'Baloo 2',sans-serif;color:#fff}
+
+/* CAT TABS */
+.ctabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px;-webkit-overflow-scrolling:touch}
+.ctabs::-webkit-scrollbar{display:none}
+.ctab{padding:6px 14px;border-radius:20px;border:1.5px solid var(--br);background:var(--s2);cursor:pointer;font-size:12px;font-weight:700;white-space:nowrap;flex-shrink:0;color:var(--text2);transition:all .15s}
+.ctab.on{background:var(--red);color:#fff;border-color:var(--red)}
+
+/* PROGRESS */
+.prog{height:4px;background:var(--br);border-radius:2px;overflow:hidden;margin-top:6px}
+.prog-f{height:100%;background:linear-gradient(90deg,var(--red),var(--orange));border-radius:2px;transition:width 1s}
+
+/* TABLE CARDS */
+.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1rem}
+.tcard{background:var(--s2);border:2px solid var(--br);border-radius:var(--r);padding:14px;cursor:pointer;text-align:center;transition:all .2s}
+.tcard:hover{transform:translateY(-2px)}
+.tcard .tn2{font-family:'Baloo 2',sans-serif;font-size:18px;font-weight:800;color:#fff}
+.tcard .ts2{font-size:11px;margin-top:3px;font-weight:600}
+.tcard.te{border-color:rgba(46,213,115,.35)}.tcard.te .ts2{color:var(--teal)}
+.tcard.tor{border-color:rgba(255,165,2,.35);background:rgba(255,165,2,.04)}.tcard.tor .ts2{color:var(--orange)}
+.tcard.tbu{border-color:rgba(255,71,87,.35);background:rgba(255,71,87,.04)}.tcard.tbu .ts2{color:var(--red)}
+.tcard.tre{border-color:rgba(30,144,255,.35);background:rgba(30,144,255,.04)}.tcard.tre .ts2{color:var(--blue)}
+
+/* LIST ROWS */
+.lrow{display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--br);font-size:13px}
+.lrow:last-child{border-bottom:none}
+.lrow-actions{display:flex;gap:6px;flex-shrink:0;margin-left:8px;align-items:center}
+
+/* NOTIFS */
+.nrow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--br);font-size:13px;color:var(--text2)}
+.nrow:last-child{border-bottom:none}
+.ntime{color:var(--text3);font-size:11px;flex-shrink:0;margin-left:10px}
+
+/* CHART */
+.chart-wrap{display:flex;align-items:flex-end;gap:6px;height:80px;margin:10px 0 4px}
+.cbar{flex:1;background:linear-gradient(to top,rgba(46,213,115,.6),rgba(46,213,115,.1));border-radius:4px 4px 0 0;min-height:3px;position:relative;cursor:pointer;transition:all .4s}
+.cbar:hover{background:linear-gradient(to top,rgba(46,213,115,.9),rgba(46,213,115,.2))}
+.cbarlbl{display:flex;gap:6px;margin-top:2px}
+.cbarlbl span{flex:1;text-align:center;font-size:10px;color:var(--text3);font-weight:600}
+.cbar-tip{position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:var(--s3);border-radius:4px;padding:2px 6px;font-size:10px;font-weight:700;color:#fff;white-space:nowrap;display:none;pointer-events:none}
+.cbar:hover .cbar-tip{display:block}
+
+/* DISH RANK */
+.drank{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--br)}
+.drank:last-child{border-bottom:none}
+.drnum{font-family:'Baloo 2',sans-serif;font-size:18px;font-weight:800;color:var(--text3);width:28px;flex-shrink:0}
+.drbar{flex:1;height:6px;background:var(--br);border-radius:3px;overflow:hidden}
+.drbar-f{height:100%;background:linear-gradient(90deg,var(--red),var(--orange));border-radius:3px;transition:width .6s}
+
+/* MODAL */
+.modalbg{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:1000;display:none;align-items:flex-end;justify-content:center}
+.modalbg.on{display:flex}
+.modal{background:var(--s1);border-radius:20px 20px 0 0;padding:1.5rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;border:1px solid var(--br);border-bottom:none}
+.modal-drag{width:40px;height:4px;background:var(--br2);border-radius:2px;margin:0 auto 16px}
+.modal-title{font-family:'Baloo 2',sans-serif;font-size:17px;font-weight:800;color:#fff;margin-bottom:1rem}
+
+/* EARNING */
+.earning-display{font-family:'Baloo 2',sans-serif;font-size:46px;font-weight:800;color:var(--teal);line-height:1;margin:6px 0 2px}
+.earning-sub{font-size:13px;color:var(--text2)}
+
+/* EMPTY */
+.empty{text-align:center;padding:2.5rem 1rem;color:var(--text3)}
+.empty .ei{font-size:40px;margin-bottom:8px}
+.empty p{font-size:13px}
+
+/* MISC */
+.sep{border:none;border-top:1px solid var(--br);margin:10px 0}
+.section-lbl{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px}
+.user-avatar{width:28px;height:28px;border-radius:50%;border:2px solid var(--br)}
+.logout-btn{font-size:12px;color:var(--text3);cursor:pointer;background:none;border:none;font-family:'Mukta',sans-serif}
+.logout-btn:hover{color:var(--red)}
+
+/* STAFF CARDS */
+.staff-card{background:var(--s2);border:1.5px solid var(--br);border-radius:var(--r);padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.staff-info .staff-name{font-size:14px;font-weight:700;color:#fff}
+.staff-info .staff-meta{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* HOTEL SEARCH (Customer) */
+.hotel-search-wrap{width:100%;max-width:400px;padding:1.5rem}
+.hotel-search-card{background:var(--s1);border:1px solid var(--br);border-radius:20px;padding:2rem}
+
+/* PIN INPUT */
+.pin-input-box{width:100%;padding:12px 16px;background:var(--s3);border:1.5px solid var(--br2);border-radius:10px;color:#fff;font-size:18px;letter-spacing:8px;outline:none;font-family:'Baloo 2',sans-serif;text-align:center;font-weight:700}
+.pin-input-box:focus{border-color:var(--red)}
+
+@media(max-width:500px){
+  .sg4{grid-template-columns:repeat(2,1fr)}
+  .sg3{grid-template-columns:repeat(3,1fr)}
+  .g2{grid-template-columns:1fr}
+  .tgrid{grid-template-columns:repeat(3,1fr)}
+  .table-grid{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+
+<button class="lang-btn" id="lang-btn" onclick="toggleLang()">EN</button>
+<div id="toast"></div>
+
+<!-- ════════════════════════════════════════════
+     PAGE: HOME — Start / Role Selection
+════════════════════════════════════════════ -->
+<div class="page flex-page" id="pg-home">
+<div style="width:100%;max-width:420px;padding:1.5rem">
+  <div style="text-align:center;margin-bottom:1.5rem">
+    <div style="font-size:64px;animation:float 3s ease-in-out infinite;display:block;margin-bottom:12px">🍽️</div>
+    <h2 style="font-family:'Baloo 2',sans-serif;font-size:26px;font-weight:800;color:#fff;margin-bottom:4px" id="home-hotel-name">HotelPro</h2>
+    <p style="color:var(--text2);font-size:13px" id="home-hotel-addr"></p>
+  </div>
+
+  <!-- Customer Option -->
+  <div onclick="homeGoCustomer()"
+    style="background:rgba(46,213,115,.06);border:2px solid rgba(46,213,115,.3);border-radius:18px;padding:20px 18px;margin-bottom:12px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:16px"
+    onmouseover="this.style.borderColor='var(--teal)';this.style.background='rgba(46,213,115,.12)'"
+    onmouseout="this.style.borderColor='rgba(46,213,115,.3)';this.style.background='rgba(46,213,115,.06)'">
+    <div style="font-size:40px;flex-shrink:0">🛒</div>
+    <div style="text-align:left">
+      <div style="font-family:'Baloo 2',sans-serif;font-size:17px;font-weight:800;color:#fff">Customer हूँ</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:2px">Menu देखें, Order करें, Bill माँगें</div>
+    </div>
+    <div style="margin-left:auto;font-size:22px;color:var(--teal)">→</div>
+  </div>
+
+  <!-- Staff Option -->
+  <div onclick="homeGoStaff()"
+    style="background:rgba(255,71,87,.06);border:2px solid rgba(255,71,87,.3);border-radius:18px;padding:20px 18px;margin-bottom:12px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:16px"
+    onmouseover="this.style.borderColor='var(--red)';this.style.background='rgba(255,71,87,.12)'"
+    onmouseout="this.style.borderColor='rgba(255,71,87,.3)';this.style.background='rgba(255,71,87,.06)'">
+    <div style="font-size:40px;flex-shrink:0">👨‍💼</div>
+    <div style="text-align:left">
+      <div style="font-family:'Baloo 2',sans-serif;font-size:17px;font-weight:800;color:#fff">Staff / मालिक हूँ</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:2px">👑 Owner &nbsp;|&nbsp; 📊 Manager &nbsp;|&nbsp; 👨‍🍳 Cook &nbsp;|&nbsp; 🧑‍💼 Waiter</div>
+    </div>
+    <div style="margin-left:auto;font-size:22px;color:var(--red)">→</div>
+  </div>
+
+  <!-- New Hotel Register -->
+  <div onclick="showPage('pg-register')"
+    style="background:rgba(30,144,255,.06);border:2px solid rgba(30,144,255,.25);border-radius:18px;padding:16px 18px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:16px"
+    onmouseover="this.style.borderColor='var(--blue)';this.style.background='rgba(30,144,255,.12)'"
+    onmouseout="this.style.borderColor='rgba(30,144,255,.25)';this.style.background='rgba(30,144,255,.06)'">
+    <div style="font-size:36px;flex-shrink:0">🏨</div>
+    <div style="text-align:left">
+      <div style="font-family:'Baloo 2',sans-serif;font-size:15px;font-weight:800;color:#fff">नया होटल Register करें</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:2px">एक बार सेटअप — हमेशा के लिए फ्री!</div>
+    </div>
+    <div style="margin-left:auto;font-size:22px;color:var(--blue)">→</div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     PAGE: CUSTOMER HOTEL SEARCH
+     Customer yahan hotel ka naam daalkar dhundhe
+════════════════════════════════════════════ -->
+<div class="page flex-page" id="pg-cust-search">
+<div class="hotel-search-wrap">
+<div class="hotel-search-card" style="text-align:center">
+  <div style="font-size:60px;animation:float 3s ease-in-out infinite;display:block;margin-bottom:12px">🍽️</div>
+  <h2 style="font-size:22px;color:#fff;margin-bottom:4px" id="cs-title">Order करें</h2>
+  <p style="color:var(--text2);font-size:13px;margin-bottom:20px" id="cs-sub">अपने होटल का नाम डालें</p>
+
+  <!-- Direct Login Card (shown when hotel URL is already known) -->
+  <div id="direct-login-card" style="display:none;background:rgba(46,213,115,.06);border:1.5px solid rgba(46,213,115,.25);border-radius:16px;padding:16px;margin-bottom:16px;text-align:left">
+    <div style="font-size:13px;font-weight:700;color:var(--teal);margin-bottom:4px">✅ होटल मिल गया!</div>
+    <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:2px" id="direct-hotel-name">—</div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:2px" id="direct-hotel-addr"></div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:12px" id="direct-hotel-phone"></div>
+    <input id="direct-cust-name" placeholder="👤 अपना नाम डालें (Optional)..." autocomplete="off"
+      style="width:100%;padding:10px 13px;background:var(--s2);border:1.5px solid var(--br);border-radius:var(--r2);color:var(--text);font-size:14px;font-family:'Mukta',sans-serif;outline:none;margin-bottom:10px;transition:border .2s"
+      onkeydown="if(event.key==='Enter')directCustLogin()">
+    <button class="btn btn-green" style="width:100%;font-size:15px;padding:13px" onclick="directCustLogin()">
+      🍴 Order करने जाएं →
+    </button>
+    <div style="text-align:center;margin-top:10px">
+      <button class="btn btn-ghost btn-sm" style="font-size:11px" onclick="g('direct-login-card').style.display='none';g('search-section').style.display='block'">दूसरा होटल ढूंढें</button>
+    </div>
+  </div>
+
+  <!-- Search Section -->
+  <div id="search-section">
+    <div class="fld" style="text-align:left">
+      <label id="cs-label">🏨 होटल का नाम</label>
+      <input id="cust-hotel-search" placeholder="जैसे: Sharma Dhaba..." autocomplete="off"
+        style="width:100%;padding:12px 14px;background:var(--s2);border:1.5px solid var(--br);border-radius:var(--r2);color:var(--text);font-size:15px;font-family:'Mukta',sans-serif;outline:none;transition:border .2s"
+        oninput="this.style.borderColor='var(--br)'"
+        onkeydown="if(event.key==='Enter')searchHotelForCust()">
+    </div>
+
+    <div id="cust-search-err" style="font-size:12px;color:var(--red);text-align:center;margin:6px 0;min-height:18px"></div>
+
+    <button class="btn btn-red btn-block" style="font-size:15px;padding:14px" onclick="searchHotelForCust()" id="cs-btn">
+      🔍 होटल ढूंढें
+    </button>
+
+    <div id="cust-search-results" style="margin-top:12px;max-height:280px;overflow-y:auto"></div>
+  </div>
+
+  <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--br)">
+    <div style="font-size:11px;color:var(--text3)" id="cs-staff-hint">Staff / Malik हैं? <a href="javascript:void(0)" onclick="goToStaffLogin()" style="color:var(--blue);font-weight:700">Staff Login →</a></div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     PAGE: REGISTER (New Hotel)
+════════════════════════════════════════════ -->
+<div class="page flex-page" id="pg-register">
+<div class="reg-wrap">
+<div class="reg-card">
+  <div class="reg-top">
+    <span class="reg-emoji">🍽️</span>
+    <h2>होटल रजिस्टर करें</h2>
+    <p>एक बार सेटअप — हमेशा के लिए फ्री!</p>
+  </div>
+  <div class="section-head">होटल की जानकारी</div>
+  <div class="fld"><label>होटल का नाम *</label><input id="r-name" placeholder="Sharma Dhaba..."></div>
+  <div class="fld"><label>पता</label><input id="r-addr" placeholder="Main Road, Meerut"></div>
+  <div class="g2">
+    <div class="fld"><label>फ़ोन</label><input id="r-phone" type="tel" placeholder="9876543210"></div>
+    <div class="fld"><label>टेबल (1-30)</label><input id="r-tables" type="number" value="9" min="1" max="30"></div>
+  </div>
+  <div class="fld"><label>इमोजी / लोगो</label><input id="r-emoji" value="🍽️"></div>
+
+  <div class="section-head">Staff PINs (सब अलग-अलग PIN रखें)</div>
+  <div class="g2">
+    <div class="fld"><label>👑 मालिक PIN</label><input id="r-pin-owner" value="1111" maxlength="6" type="tel"><div class="pin-hint">सिर्फ मालिक को पता हो</div></div>
+    <div class="fld"><label>📊 मैनेजर PIN</label><input id="r-pin-mgr" value="2222" maxlength="6" type="tel"></div>
+  </div>
+  <div class="g2">
+    <div class="fld"><label>👨‍🍳 कुक PIN</label><input id="r-pin-cook" value="3333" maxlength="6" type="tel"></div>
+    <div class="fld"><label>🧑‍💼 Waiter PIN</label><input id="r-pin-waiter" value="4444" maxlength="6" type="tel"><div class="pin-hint">Waiter की ID अलग बनेगी</div></div>
+  </div>
+  <button class="btn btn-red btn-block" style="font-size:15px;padding:15px" onclick="registerHotel()">✓ होटल रजिस्टर करें</button>
+</div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     PAGE: SUCCESS
+════════════════════════════════════════════ -->
+<div class="page flex-page" id="pg-success">
+<div class="success-wrap">
+<div class="success-card">
+  <div class="success-icon">🎉</div>
+  <h2>रजिस्ट्रेशन सफल!</h2>
+  <p style="color:var(--text2);font-size:13px;margin:6px 0 1.2rem">आपका होटल अब लाइव है</p>
+  <div id="success-content"></div>
+</div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     PAGE: STAFF LOGIN (All roles — No Gmail)
+════════════════════════════════════════════ -->
+<div class="page flex-page" id="pg-glogin">
+<div class="glogin-wrap" style="max-width:460px;max-height:98vh;overflow-y:auto">
+<div class="glogin-card">
+  <span class="logo-emoji" id="glogin-emoji">🍽️</span>
+  <h2 id="glogin-hotel-name">Hotel</h2>
+  <p style="color:var(--text2);font-size:13px;margin:4px 0 16px">अपना role चुनकर PIN डालें — Gmail ज़रूरी नहीं</p>
+
+  <!-- OWNER -->
+  <div style="background:rgba(255,71,87,.07);border:1.5px solid rgba(255,71,87,.3);border-radius:14px;padding:14px;margin-bottom:10px;text-align:left">
+    <div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:4px">👑 होटल मालिक — PIN Login</div>
+    <div class="pin-row" id="owner-pin-dots"></div>
+    <input class="pin-input-box" type="password" id="owner-pin-kb" inputmode="numeric" maxlength="6" autocomplete="off"
+      placeholder="PIN डालें..."
+      oninput="onPinInput('owner',this.value)" onkeydown="if(event.key==='Enter')checkPinRole('owner')">
+    <div id="owner-err" style="font-size:11px;color:var(--red);margin-top:6px;min-height:16px;text-align:center"></div>
+  </div>
+
+  <!-- MANAGER -->
+  <div style="background:rgba(162,155,254,.07);border:1.5px solid rgba(162,155,254,.3);border-radius:14px;padding:14px;margin-bottom:10px;text-align:left">
+    <div style="font-size:13px;font-weight:700;color:var(--purple);margin-bottom:4px">📊 मैनेजर — PIN Login</div>
+    <div class="pin-row" id="mgr-pin-dots"></div>
+    <input class="pin-input-box" type="password" id="mgr-pin-kb" inputmode="numeric" maxlength="6" autocomplete="off"
+      placeholder="PIN डालें..."
+      oninput="onPinInput('manager',this.value)" onkeydown="if(event.key==='Enter')checkPinRole('manager')">
+    <div id="mgr-err" style="font-size:11px;color:var(--red);margin-top:6px;min-height:16px;text-align:center"></div>
+  </div>
+
+  <!-- COOK -->
+  <div style="background:rgba(255,165,2,.07);border:1.5px solid rgba(255,165,2,.3);border-radius:14px;padding:14px;margin-bottom:10px;text-align:left">
+    <div style="font-size:13px;font-weight:700;color:var(--orange);margin-bottom:4px">👨‍🍳 Cook — PIN Login</div>
+    <div class="pin-row" id="cook-pin-dots"></div>
+    <input class="pin-input-box" type="password" id="cook-pin-kb" inputmode="numeric" maxlength="6" autocomplete="off"
+      placeholder="PIN डालें..."
+      oninput="onPinInput('cook',this.value)" onkeydown="if(event.key==='Enter')checkPinRole('cook')">
+    <div id="cook-err" style="font-size:11px;color:var(--red);margin-top:6px;min-height:16px;text-align:center"></div>
+  </div>
+
+  <!-- WAITER -->
+  <div style="background:rgba(30,144,255,.07);border:1.5px solid rgba(30,144,255,.3);border-radius:14px;padding:14px;margin-bottom:10px;text-align:left">
+    <div style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:4px">🧑‍💼 Waiter — ID + PIN Login</div>
+    <input id="waiter-id-inp" autocomplete="off" placeholder="Waiter ID (जैसे W001)..."
+      style="width:100%;padding:10px 12px;background:var(--s3);border:1.5px solid var(--br2);border-radius:8px;color:#fff;font-size:14px;font-family:'Mukta',sans-serif;outline:none;margin-bottom:8px;text-transform:uppercase"
+      oninput="this.value=this.value.toUpperCase()">
+    <div class="pin-row" id="waiter-pin-dots"></div>
+    <input class="pin-input-box" type="password" id="waiter-pin-kb" inputmode="numeric" maxlength="6" autocomplete="off"
+      placeholder="PIN डालें..."
+      oninput="onWaiterPinInput(this.value)" onkeydown="if(event.key==='Enter')checkWaiterLogin()">
+    <div id="waiter-err" style="font-size:11px;color:var(--red);margin-top:6px;min-height:16px;text-align:center"></div>
+  </div>
+
+  <!-- Customer Section -->
+  <div style="margin-top:4px;padding-top:14px;border-top:1px solid var(--br);text-align:center">
+    <div style="font-size:12px;color:var(--text3);margin-bottom:10px" id="cust-hint-txt">Customer हैं? होटल में बैठे हैं?</div>
+    <button class="btn btn-ghost" style="width:100%;margin-bottom:8px" onclick="showPage('pg-cust-search')">🍽️ Customer Order करें →</button>
+    <button class="btn btn-ghost" style="width:100%;font-size:12px" onclick="showHomePage()">🏠 Main Page पर जाएं</button>
+  </div>
+
+</div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     PAGE: CUSTOMER LANDING
+════════════════════════════════════════════ -->
+<div class="page" id="pg-cust-land">
+<div class="cust-land">
+  <div style="max-width:400px;width:100%">
+    <div class="cland-emoji" id="cl-emoji">🍽️</div>
+    <div class="cland-name" id="cl-name">Restaurant</div>
+    <div class="cland-addr" id="cl-addr"></div>
+
+    <!-- Hotel Details Card -->
+    <div id="cl-details-card" style="background:var(--s1);border:1px solid var(--br);border-radius:16px;padding:12px 16px;margin:8px 0;width:100%;max-width:360px;text-align:left;display:none">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🏨 Hotel Info</div>
+      <div id="cl-hotel-name-row" style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px"></div>
+      <div id="cl-hotel-addr-row" style="font-size:12px;color:var(--text2);margin-bottom:3px"></div>
+      <div id="cl-hotel-phone-row" style="font-size:12px;color:var(--text2)"></div>
+    </div>
+
+    <!-- Customer Name (Optional) -->
+    <div style="width:100%;max-width:360px;margin:10px 0">
+      <div style="background:var(--s1);border:1px solid var(--br);border-radius:16px;padding:14px">
+        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px" id="name-label-txt">👤 अपना नाम डालें (Optional)</div>
+        <input id="cust-name-inp" placeholder="आपका नाम... (छोड़ भी सकते हैं)" autocomplete="off"
+          style="width:100%;padding:10px 13px;background:var(--s2);border:1.5px solid var(--br);border-radius:var(--r2);color:var(--text);font-size:14px;font-family:'Mukta',sans-serif;outline:none;transition:border .2s">
+        <div style="font-size:11px;color:var(--text3);margin-top:5px" id="name-hint-txt">बिना नाम के भी order कर सकते हैं</div>
+      </div>
+    </div>
+
+    <div class="cland-table-sel">
+      <h3 id="table-sel-lbl">अपनी टेबल चुनें 👇</h3>
+      <div class="table-grid" id="table-grid"></div>
+    </div>
+
+    <button class="cland-cta" id="cta-btn" onclick="openCustApp()" disabled>
+      🍴 Menu देखें & Order करें
+    </button>
+    <div id="cl-phone" style="color:var(--text3);font-size:12px;margin-top:10px"></div>
+    <div style="margin-top:12px">
+      <button class="btn btn-ghost btn-sm" onclick="showPage('pg-cust-search')" style="font-size:11px">← होटल बदलें</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     CUSTOMER SHELL
+════════════════════════════════════════════ -->
+<div id="cust-shell">
+<div class="appbar">
+  <div class="appbar-left">
+    <div class="appbar-name" id="cbar-name">🍽️ Restaurant</div>
+  </div>
+  <div class="appbar-right">
+    <span style="font-size:12px;color:var(--text2)" id="cbar-table"></span>
+    <span style="font-size:12px;color:var(--text3)" id="cbar-custname"></span>
+    <button class="logout-btn" onclick="custLogout()" title="Logout" style="background:rgba(255,71,87,.12);border:1px solid rgba(255,71,87,.35);color:var(--red);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;font-family:'Baloo 2',sans-serif">⏻ Exit</button>
+  </div>
+</div>
+<div class="nav-bar">
+  <button class="ntab on" onclick="custTab('menu',this)" id="ctab-menu">🍴 मेन्यू</button>
+  <button class="ntab" onclick="custTab('status',this)" id="ctab-status">📋 मेरा Order</button>
+</div>
+<div class="view-wrap">
+  <div id="cv-menu"></div>
+  <div id="cv-status" style="display:none"></div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     STAFF APP SHELL
+════════════════════════════════════════════ -->
+<div id="app-shell">
+<div class="appbar">
+  <div class="appbar-left">
+    <div class="appbar-name" id="bar-name">🍽️ Hotel</div>
+  </div>
+  <div class="appbar-right">
+    <span class="role-chip" id="bar-role">Staff</span>
+    <span class="live-ind" id="bar-live" title="Connection">●</span>
+    <button onclick="doSignOut()" style="background:rgba(255,71,87,.12);border:1px solid rgba(255,71,87,.35);color:var(--red);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Baloo 2',sans-serif;display:flex;align-items:center;gap:4px" title="Logout / Main Page par jaayein">⏻ Logout</button>
+  </div>
+</div>
+<div class="nav-bar" id="nav-bar"></div>
+<div class="view-wrap" id="view-wrap"></div>
+</div>
+
+<!-- DISH MODAL -->
+<div class="modalbg" id="mod-dish">
+<div class="modal">
+  <div class="modal-drag"></div>
+  <div class="modal-title" id="mod-dish-title">🍴 Dish Add</div>
+  <input type="hidden" id="dk">
+  <div class="fld"><label>Dish का नाम *</label><input id="d-name" placeholder="Paneer Tikka..."></div>
+  <div class="g2">
+    <div class="fld"><label>Price (₹) *</label><input id="d-price" type="number" placeholder="180"></div>
+    <div class="fld"><label>समय (min)</label><input id="d-time" type="number" value="15"></div>
+  </div>
+  <div class="fld"><label>Category *</label><select id="d-cat"></select></div>
+  <div class="fld"><label>Description</label><input id="d-desc" placeholder="Optional..."></div>
+  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text2);margin-top:8px">
+    <input type="checkbox" id="d-avail" checked style="width:auto"> अभी Available है?
+  </label>
+  <div style="display:flex;gap:8px;margin-top:16px">
+    <button class="btn btn-red" style="flex:1" onclick="saveDish()">✓ Save</button>
+    <button class="btn btn-ghost" style="flex:1" onclick="closeMod('mod-dish')">Cancel</button>
+  </div>
+</div>
+</div>
+
+<!-- GEN MODAL -->
+<div class="modalbg" id="mod-gen">
+<div class="modal"><div id="mod-gen-inner"></div></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  FIREBASE CONFIG
+// ══════════════════════════════════════════════════════
+const FC={
+  apiKey:"AIzaSyCnbrvcG6-GWqoYkmdtAlrLxEaPMGW0JrA",
+  authDomain:"restaurantapp-ea04e.firebaseapp.com",
+  databaseURL:"https://restaurantapp-ea04e-default-rtdb.firebaseio.com",
+  projectId:"restaurantapp-ea04e",
+  storageBucket:"restaurantapp-ea04e.firebasestorage.app",
+  messagingSenderId:"792660675902",
+  appId:"1:792660675902:web:bc91926daab5f8cf86306f"
+};
+firebase.initializeApp(FC);
+const db=firebase.database();
+const auth=firebase.auth();
+
+// ══════════════════════════════════════════════════════
+//  LANGUAGE
+// ══════════════════════════════════════════════════════
+let lang=localStorage.getItem('hp_lang')||'hi';
+function t(hi,en){return lang==='en'?en:hi;}
+function toggleLang(){
+  lang=lang==='hi'?'en':'hi';
+  localStorage.setItem('hp_lang',lang);
+  document.getElementById('lang-btn').textContent=lang==='hi'?'EN':'हि';
+  applyLangText();
+}
+function applyLangText(){
+  document.getElementById('lang-btn').textContent=lang==='hi'?'EN':'हि';
+  // Customer search page
+  const cst=document.getElementById('cs-title');if(cst)cst.textContent=t('Order करें','Place Order');
+  const css=document.getElementById('cs-sub');if(css)css.textContent=t('अपने होटल का नाम डालें','Enter your hotel name');
+  const csl=document.getElementById('cs-label');if(csl)csl.textContent=t('🏨 होटल का नाम','🏨 Hotel Name');
+  const csb=document.getElementById('cs-btn');if(csb)csb.innerHTML=t('🔍 होटल ढूंढें','🔍 Search Hotel');
+  const csh=document.getElementById('cs-staff-hint');if(csh)csh.innerHTML=t('Staff / Malik हैं? <a href="javascript:void(0)" onclick="goToStaffLogin()" style="color:var(--blue);font-weight:700">Staff Login →</a>','Are you Staff/Owner? <a href="javascript:void(0)" onclick="goToStaffLogin()" style="color:var(--blue);font-weight:700">Staff Login →</a>');
+  const nlt=document.getElementById('name-label-txt');if(nlt)nlt.textContent=t('👤 अपना नाम डालें (Optional)','👤 Enter Your Name (Optional)');
+  const nht=document.getElementById('name-hint-txt');if(nht)nht.textContent=t('बिना नाम के भी order कर सकते हैं','You can order without a name too');
+  const tsl=document.getElementById('table-sel-lbl');if(tsl)tsl.textContent=t('अपनी टेबल चुनें 👇','Select Your Table 👇');
+  const cib=document.getElementById('cust-hint-txt');if(cib)cib.textContent=t('Customer हैं? होटल में बैठे हैं?','Are you a Customer? Sitting in the hotel?');
+  // Customer name input placeholder
+  const cin=document.getElementById('cust-name-inp');if(cin)cin.placeholder=t('आपका नाम... (छोड़ भी सकते हैं)','Your name... (can skip)');
+  const chs=document.getElementById('cust-hotel-search');if(chs)chs.placeholder=t('जैसे: Sharma Dhaba...','E.g. Sharma Dhaba...');
+}
+
+// ══════════════════════════════════════════════════════
+//  localStorage HELPERS — Data Persist after App Close
+// ══════════════════════════════════════════════════════
+function lsSave(key,val){try{localStorage.setItem('hp_'+key,JSON.stringify(val));}catch(e){}}
+function lsLoad(key,def){try{const v=localStorage.getItem('hp_'+key);return v!=null?JSON.parse(v):def;}catch(e){return def;}}
+function lsClear(key){try{localStorage.removeItem('hp_'+key);}catch(e){}}
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+const params=new URLSearchParams(location.search);
+let HID=params.get('hotel')||null;
+const IS_CUST=params.get('c')==='1';
+
+let hotelData={},tablesData={},ordersData={},menuData={},catsData=[],notifData=[],staffData={};
+let currentRole=null,currentWaiterId=null,currentWaiterName=null,currentCustName='Guest';
+let cart=[],custCat='all',adminCat='all',selTableId=null;
+// PIN buffers per role
+const pinBufs={owner:'',manager:'',cook:'',waiter:''};
+
+// ══════════════════════════════════════════════════════
+//  LOCAL DATA SYNC — Always save on update, load on start
+// ══════════════════════════════════════════════════════
+function syncLocal(){
+  if(!HID)return;
+  lsSave('last_hid',HID);
+  if(Object.keys(hotelData).length)lsSave('h_'+HID,hotelData);
+  if(Object.keys(menuData).length)lsSave('m_'+HID,menuData);
+  if(catsData.length)lsSave('c_'+HID,catsData);
+  if(Object.keys(staffData).length)lsSave('s_'+HID,staffData);
+}
+function loadLocal(){
+  if(!HID)return;
+  if(!Object.keys(hotelData).length){const v=lsLoad('h_'+HID,null);if(v)hotelData=v;}
+  if(!Object.keys(menuData).length){const v=lsLoad('m_'+HID,null);if(v)menuData=v;}
+  if(!catsData.length){const v=lsLoad('c_'+HID,null);if(v)catsData=v;}
+  if(!Object.keys(staffData).length){const v=lsLoad('s_'+HID,null);if(v)staffData=v;}
+}
+
+// ══════════════════════════════════════════════════════
+//  PAGES
+// ══════════════════════════════════════════════════════
+const ALL_PAGES=['pg-home','pg-cust-search','pg-register','pg-success','pg-glogin','pg-cust-land'];
+function showPage(id){
+  ALL_PAGES.forEach(p=>{const el=document.getElementById(p);if(el)el.classList.remove('on');});
+  document.getElementById('app-shell').classList.remove('on');
+  document.getElementById('cust-shell').style.display='none';
+  if(id==='app-shell')document.getElementById('app-shell').classList.add('on');
+  else if(id==='cust-shell'){document.getElementById('cust-shell').style.display='flex';}
+  else{const el=document.getElementById(id);if(el)el.classList.add('on');}
+}
+function g(id){return document.getElementById(id);}
+function toast(msg,dur=2800){const t=g('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+function copyText(txt){navigator.clipboard.writeText(txt).then(()=>toast('✅ Copy ho gaya!')).catch(()=>toast('Copy: '+txt));}
+function openMod(id){g(id).classList.add('on');}
+function closeMod(id){g(id).classList.remove('on');}
+function showGenMod(html){g('mod-gen-inner').innerHTML=html;g('mod-gen').classList.add('on');}
+function closeGenMod(){g('mod-gen').classList.remove('on');}
+function showErr(msg){document.body.innerHTML=`<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0b0b10;text-align:center;padding:2rem;color:#eee"><div><div style="font-size:48px">⚠️</div><h2 style="font-family:sans-serif;margin:12px 0;color:#fff">${msg}</h2><button style="margin-top:1rem;padding:12px 24px;background:#ff4757;color:#fff;border:none;border-radius:10px;font-size:14px;cursor:pointer;font-weight:700" onclick="location.href=location.pathname">← Wapas Jaao</button></div></div>`;}
+
+// ══════════════════════════════════════════════════════
+//  PIN SYSTEM — Unified for all roles
+// ══════════════════════════════════════════════════════
+function onPinInput(role,val){
+  pinBufs[role]=val.replace(/\D/g,'').slice(0,6);
+  renderPinDots(role,pinBufs[role]);
+  const correct=String((hotelData.pins||{})[role]||{owner:'1111',manager:'2222',cook:'3333'}[role]||'1111');
+  if(pinBufs[role].length>=correct.length)setTimeout(()=>checkPinRole(role),150);
+}
+function renderPinDots(role,buf){
+  const dotsEl=g(role+'-pin-dots')||g(role.replace('manager','mgr')+'-pin-dots');
+  if(!dotsEl)return;
+  const correct=String((hotelData.pins||{})[role]||'1111');
+  const len=Math.max(4,correct.length);
+  dotsEl.innerHTML='';
+  for(let i=0;i<len;i++){const d=document.createElement('div');d.className='pdot'+(i<buf.length?' on':'');dotsEl.appendChild(d);}
+}
+function checkPinRole(role){
+  const correct=String((hotelData.pins||{})[role]||{owner:'1111',manager:'2222',cook:'3333'}[role]||'1111');
+  const errEl=g(role==='manager'?'mgr-err':role+'-err');
+  const kbEl=g(role==='manager'?'mgr-pin-kb':role+'-pin-kb');
+  const isEnabled=hotelData.staffEnabled?hotelData.staffEnabled[role]!==false:true;
+
+  function showError(msg){
+    if(errEl){errEl.textContent=msg;setTimeout(()=>{if(errEl)errEl.textContent='';},2500);}
+    pinBufs[role]='';renderPinDots(role,'');if(kbEl)kbEl.value='';
+  }
+
+  if(!isEnabled&&role!=='owner'){showError(t('❌ Account बंद है! मालिक से संपर्क करें।','❌ Account disabled! Contact owner.'));return;}
+  if(pinBufs[role]!==correct){showError(t('❌ Galat PIN!','❌ Wrong PIN!'));return;}
+
+  // Success
+  currentRole=role;
+  sessionStorage.setItem('sess_role_'+HID,role);
+  sessionStorage.setItem('sess_pin_'+HID,correct); // verify on reload
+  lsSave('last_role_'+HID,role); // persist role for staff reload
+
+  const roleLabels={owner:t('👑 मालिक','👑 Owner'),manager:t('📊 मैनेजर','📊 Manager'),cook:t('👨‍🍳 Cook','👨‍🍳 Cook'),waiter:t('🧑‍💼 Waiter','🧑‍💼 Waiter')};
+  startAdminListeners();buildAdminShell();
+  toast(t('Welcome, ','Welcome, ')+roleLabels[role]+'! 👋');
+}
+
+// Waiter PIN
+let waiterPinBuf='';
+function onWaiterPinInput(val){
+  waiterPinBuf=val.replace(/\D/g,'').slice(0,6);
+  const dots=g('waiter-pin-dots');if(!dots)return;
+  dots.innerHTML='';
+  for(let i=0;i<4;i++){const d=document.createElement('div');d.className='pdot'+(i<waiterPinBuf.length?' on':'');dots.appendChild(d);}
+  if(waiterPinBuf.length>=4)setTimeout(checkWaiterLogin,150);
+}
+function checkWaiterLogin(){
+  const wid=(g('waiter-id-inp')?.value||'').trim().toUpperCase();
+  const errEl=g('waiter-err');
+  function showErr2(msg){if(errEl){errEl.textContent=msg;setTimeout(()=>{if(errEl)errEl.textContent='';},2500);}waiterPinBuf='';onWaiterPinInput('');const kb=g('waiter-pin-kb');if(kb)kb.value='';}
+  if(!wid){showErr2(t('Waiter ID ज़रूर डालें!','Enter Waiter ID first!'));return;}
+  db.ref('hotels/'+HID+'/staff/'+wid).once('value',s=>{
+    const w=s.val();
+    if(!w){showErr2(t('❌ Waiter ID नहीं मिली!','❌ Waiter ID not found!'));return;}
+    if(w.enabled===false){showErr2(t('❌ Account बंद है!','❌ Account disabled!'));return;}
+    if(String(w.pin)!==String(waiterPinBuf)){showErr2(t('❌ Galat PIN!','❌ Wrong PIN!'));return;}
+    currentRole='waiter';currentWaiterId=wid;currentWaiterName=w.name;
+    sessionStorage.setItem('sess_waiter_'+HID,JSON.stringify({id:wid,name:w.name}));
+    lsSave('last_waiter_'+HID,{id:wid,name:w.name});
+    db.ref('hotels/'+HID+'/staff/'+wid).update({lastCheckin:Date.now(),online:true});
+    startAdminListeners();buildAdminShell();
+    toast(t('Welcome, ','Welcome, ')+w.name+'! 👋');
+  }).catch(()=>showErr2(t('Network error!','Network error!')));
+}
+
+// ══════════════════════════════════════════════════════
+//  ROUTE — App Entry Point
+// ══════════════════════════════════════════════════════
+function route(){
+  applyLangText();
+  if(!HID){
+    if(IS_CUST){
+      const lastCH=lsLoad('last_cust_hid',null);
+      if(lastCH){HID=lastCH;history.replaceState(null,'','?hotel='+HID+'&c=1');routeWithHID();}
+      else showPage('pg-cust-search');
+      return;
+    }
+    // No hotel in URL — show home page
+    const lastHid=lsLoad('last_hid',null);
+    if(lastHid){HID=lastHid;history.replaceState(null,'','?hotel='+HID);routeWithHID();}
+    else showPage('pg-home');
+    return;
+  }
+  routeWithHID();
+}
+
+function routeWithHID(){
+  loadLocal();
+  db.ref('hotels/'+HID).once('value',s=>{
+    const val=s.val();
+    if(!val){
+      if(Object.keys(hotelData).length){continueRoute();}
+      else{showErr(t('Hotel नहीं मिला! Link check करें।','Hotel not found! Check the link.'));}
+      return;
+    }
+    hotelData=val;syncLocal();
+    continueRoute();
+  }).catch(()=>{
+    if(Object.keys(hotelData).length){continueRoute();}
+    else{showErr(t('Network error! Internet चेक करें।','Network error! Check internet.'));}
+  });
+}
+
+function continueRoute(){
+  if(IS_CUST){
+    lsSave('last_cust_hid',HID);
+    startCustDataListeners();
+    showPage('pg-cust-search');
+    showDirectLoginCard();
+    return;
+  }
+  // Staff flow — check saved session
+  checkSavedSession();
+}
+
+function checkSavedSession(){
+  const sessRole=sessionStorage.getItem('sess_role_'+HID);
+  if(sessRole){currentRole=sessRole;startAdminListeners();buildAdminShell();return;}
+  const sessWaiter=sessionStorage.getItem('sess_waiter_'+HID);
+  if(sessWaiter){
+    try{const wd=JSON.parse(sessWaiter);currentRole='waiter';currentWaiterId=wd.id;currentWaiterName=wd.name;startAdminListeners();buildAdminShell();return;}catch(e){}
+  }
+  const lastRole=lsLoad('last_role_'+HID,null);
+  if(lastRole&&lastRole!=='waiter'){currentRole=lastRole;startAdminListeners();buildAdminShell();return;}
+  const lastWaiter=lsLoad('last_waiter_'+HID,null);
+  if(lastWaiter){currentRole='waiter';currentWaiterId=lastWaiter.id;currentWaiterName=lastWaiter.name;startAdminListeners();buildAdminShell();return;}
+  // No saved session — show HOME page so user can choose role
+  showHomePage();
+}
+
+function setupLoginPage(){
+  const e=hotelData.emoji||'🍽️',n=hotelData.name||'Hotel';
+  const eel=g('glogin-emoji');if(eel)eel.textContent=e;
+  const nel=g('glogin-hotel-name');if(nel)nel.textContent=n;
+  // Init pin dots
+  ['owner','manager','cook'].forEach(r=>renderPinDots(r,''));
+  const wd=g('waiter-pin-dots');if(wd){wd.innerHTML='';for(let i=0;i<4;i++){const d=document.createElement('div');d.className='pdot';wd.appendChild(d);}}
+}
+
+function goToStaffLogin(){
+  if(HID){setupLoginPage();showPage('pg-glogin');}
+  else{
+    const lastHid=lsLoad('last_hid',null);
+    if(lastHid){HID=lastHid;history.replaceState(null,'','?hotel='+HID);loadLocal();setupLoginPage();showPage('pg-glogin');}
+    else showPage('pg-home');
+  }
+}
+
+function doSignOut(){
+  sessionStorage.removeItem('sess_role_'+HID);
+  sessionStorage.removeItem('sess_waiter_'+HID);
+  lsClear('last_role_'+HID);
+  lsClear('last_waiter_'+HID);
+  if(currentWaiterId)db.ref('hotels/'+HID+'/staff/'+currentWaiterId).update({online:false,lastCheckout:Date.now()});
+  currentRole=null;currentWaiterId=null;currentWaiterName=null;
+  pinBufs.owner='';pinBufs.manager='';pinBufs.cook='';pinBufs.waiter='';waiterPinBuf='';
+  toast(t('Logout हो गए!','Logged out!'));
+  showHomePage();
+}
+
+function showHomePage(){
+  // Update home page hotel info if available
+  const hn=g('home-hotel-name');const ha=g('home-hotel-addr');
+  if(hn)hn.textContent=(hotelData.emoji||'🍽️')+' '+(hotelData.name||'HotelPro');
+  if(ha)ha.textContent=hotelData.addr?'📍 '+hotelData.addr:'';
+  showPage('pg-home');
+}
+
+function homeGoCustomer(){
+  // If hotel is known, go to customer landing directly
+  if(HID&&Object.keys(hotelData).length){
+    startCustDataListeners();
+    showPage('pg-cust-search');
+    showDirectLoginCard();
+  } else {
+    showPage('pg-cust-search');
+  }
+}
+
+function homeGoStaff(){
+  if(HID&&Object.keys(hotelData).length){
+    setupLoginPage();
+    showPage('pg-glogin');
+  } else {
+    const lastHid=lsLoad('last_hid',null);
+    if(lastHid){HID=lastHid;loadLocal();setupLoginPage();showPage('pg-glogin');}
+    else showPage('pg-register');
+  }
+}
+
+function custLogout(){
+  cart=[];selTableId=null;currentCustName='Guest';
+  lsClear('cust_name_'+HID);
+  const cvMenu=g('cv-menu');if(cvMenu)cvMenu.innerHTML='';
+  const cvStat=g('cv-status');if(cvStat)cvStat.innerHTML='';
+  toast(t('✅ Wapas aa gaye!','✅ Returned to home!'));
+  showHomePage();
+}
+
+function directCustLogin(){
+  const nameVal=(g('direct-cust-name')?.value||'').trim();
+  currentCustName=nameVal||'Guest';
+  if(nameVal)lsSave('cust_name_'+HID,nameVal);
+  // Go to customer landing
+  showCustomerLanding();
+}
+
+function showDirectLoginCard(){
+  const card=g('direct-login-card');
+  const sect=g('search-section');
+  if(!card||!sect)return;
+  const hn=g('direct-hotel-name');const ha=g('direct-hotel-addr');const hp=g('direct-hotel-phone');
+  if(hn)hn.textContent=(hotelData.emoji||'🍽️')+' '+(hotelData.name||'Hotel');
+  if(ha)ha.textContent=hotelData.addr?'📍 '+hotelData.addr:'';
+  if(hp)hp.textContent=hotelData.phone?'📞 '+hotelData.phone:'';
+  // Restore saved name
+  const saved=lsLoad('cust_name_'+HID,'');
+  const di=g('direct-cust-name');if(di&&saved)di.value=saved;
+  card.style.display='block';
+  sect.style.display='none';
+}
+
+// ══════════════════════════════════════════════════════
+//  CUSTOMER HOTEL SEARCH
+// ══════════════════════════════════════════════════════
+function searchHotelForCust(){
+  const q=(g('cust-hotel-search')?.value||'').trim().toLowerCase();
+  const errEl=g('cust-search-err');
+  const resEl=g('cust-search-results');
+  errEl.textContent='';
+  if(!q){errEl.textContent=t('होटल का नाम डालें!','Enter hotel name!');return;}
+  resEl.innerHTML=`<div style="text-align:center;padding:20px;color:var(--text3)">⏳ ${t('ढूंढ रहे हैं...','Searching...')}</div>`;
+  db.ref('hotels').once('value',s=>{
+    const all=s.val()||{};
+    const matches=Object.entries(all).filter(([hid,h])=>h&&h.name&&h.name.toLowerCase().includes(q));
+    if(!matches.length){
+      resEl.innerHTML='';
+      errEl.textContent=t('❌ कोई होटल नहीं मिला! नाम दोबारा check करें।','❌ No hotel found! Check the name.');
+      return;
+    }
+    resEl.innerHTML=matches.slice(0,8).map(([hid,h])=>`
+      <div onclick="selectCustHotel('${hid}')"
+        style="background:var(--s2);border:1.5px solid var(--br);border-radius:12px;padding:14px;margin-bottom:8px;cursor:pointer;text-align:left;transition:all .2s"
+        onmouseover="this.style.borderColor='var(--red)';this.style.background='rgba(255,71,87,.07)'"
+        onmouseout="this.style.borderColor='var(--br)';this.style.background='var(--s2)'">
+        <div style="font-size:15px;font-weight:700;color:#fff">${h.emoji||'🍽️'} ${h.name}</div>
+        ${h.addr?`<div style="font-size:11px;color:var(--text3);margin-top:3px">📍 ${h.addr}</div>`:''}
+        ${h.phone?`<div style="font-size:11px;color:var(--text3)">📞 ${h.phone}</div>`:''}
+      </div>`).join('');
+  }).catch(()=>{
+    resEl.innerHTML='';
+    errEl.textContent=t('Network error! Internet check करें।','Network error!');
+  });
+}
+
+function selectCustHotel(hid){
+  HID=hid;
+  lsSave('last_cust_hid',hid);
+  lsSave('last_hid',hid);
+  history.replaceState(null,'','?hotel='+hid+'&c=1');
+  loadLocal();
+  db.ref('hotels/'+HID).once('value',s=>{
+    hotelData=s.val()||{};syncLocal();
+    startCustDataListeners();showCustomerLanding();
+  }).catch(()=>{
+    if(Object.keys(hotelData).length){startCustDataListeners();showCustomerLanding();}
+    else toast(t('Hotel load नहीं हुई!','Hotel load failed!'));
+  });
+}
+
+// ══════════════════════════════════════════════════════
+//  CUSTOMER LANDING
+// ══════════════════════════════════════════════════════
+function showCustomerLanding(){
+  g('cl-emoji').textContent=hotelData.emoji||'🍽️';
+  g('cl-name').textContent=hotelData.name||'Restaurant';
+  const addr=g('cl-addr');if(addr)addr.textContent=hotelData.addr?'📍 '+hotelData.addr:'';
+  const ph=g('cl-phone');if(ph)ph.textContent=hotelData.phone?'📞 '+hotelData.phone:'';
+  // Hotel details card
+  const detCard=g('cl-details-card');
+  const hasDetail=hotelData.addr||hotelData.phone;
+  if(detCard&&hasDetail){
+    detCard.style.display='block';
+    const nr=g('cl-hotel-name-row');if(nr)nr.textContent=(hotelData.emoji||'🍽️')+' '+(hotelData.name||'');
+    const ar=g('cl-hotel-addr-row');if(ar)ar.textContent=hotelData.addr?'📍 '+hotelData.addr:'';
+    const pr=g('cl-hotel-phone-row');if(pr)pr.textContent=hotelData.phone?'📞 '+hotelData.phone:'';
+  } else if(detCard) detCard.style.display='none';
+  // Restore saved customer name
+  const savedName=lsLoad('cust_name_'+HID,'');
+  const ni=g('cust-name-inp');if(ni&&savedName)ni.value=savedName;
+  renderTableGrid();
+  showPage('pg-cust-land');
+}
+
+function renderTableGrid(){
+  const el=g('table-grid');if(!el)return;
+  const count=hotelData.tableCount||9;
+  el.innerHTML='';
+  for(let i=1;i<=count;i++){
+    const tb=tablesData['t'+i]||{status:'empty'};
+    const stLbl=tb.status==='empty'?t('खाली','Empty'):tb.status==='ordered'?'Order':tb.status==='ready'?'Ready':t('Busy','Busy');
+    const cls=tb.status==='ordered'?'t-ord':tb.status==='ready'?'t-ready':'';
+    const d=document.createElement('div');
+    d.className='tsel-btn '+cls+(selTableId===i?' picked':'');
+    d.innerHTML=`<div class="tn">${i}</div><div class="ts">${stLbl}</div>`;
+    d.onclick=()=>{selTableId=i;renderTableGrid();g('cta-btn').disabled=false;};
+    el.appendChild(d);
+  }
+}
+
+function openCustApp(){
+  if(!selTableId){toast(t('पहले टेबल चुनें!','Select a table first!'));return;}
+  const nameVal=(g('cust-name-inp')?.value||'').trim();
+  currentCustName=nameVal||'Guest';
+  if(nameVal)lsSave('cust_name_'+HID,nameVal);
+  g('cbar-name').textContent=(hotelData.emoji||'🍽️')+' '+(hotelData.name||'Restaurant');
+  g('cbar-table').textContent='🪑 Table '+selTableId;
+  const cnEl=g('cbar-custname');if(cnEl)cnEl.textContent=currentCustName!=='Guest'?'👤 '+currentCustName:'';
+  buildCustViews();showPage('cust-shell');
+}
+
+// ══════════════════════════════════════════════════════
+//  CUSTOMER APP
+// ══════════════════════════════════════════════════════
+function buildCustViews(){
+  g('cv-menu').innerHTML=`
+    <div class="card">
+      <div class="card-title">🍴 ${t('Menu','Menu')}</div>
+      <div class="ctabs" id="cc-ctabs"></div>
+      <div id="cc-menu-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🛒 ${t('आपका Order','Your Order')}</div>
+      <div id="cc-cart"></div>
+      <div class="sep"></div>
+      <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:800;font-family:'Baloo 2',sans-serif">
+        <span>Total:</span><span id="cc-total" style="color:var(--red)">₹0</span>
+      </div>
+      <div class="fld" style="margin-top:10px"><label>${t('Note (optional)','Note (optional)')}</label><input id="cc-note" placeholder="${t('Less spicy, no onion...','Less spicy, no onion...')}"></div>
+      <button class="btn btn-red btn-block" style="font-size:15px;padding:14px" onclick="custPlaceOrder()">✓ ${t('Order करो','Place Order')}</button>
+    </div>`;
+  g('cv-status').innerHTML=`
+    <div class="card">
+      <div class="card-title">📋 ${t('मेरा Order Status','My Order Status')}</div>
+      <div id="cc-orders"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">${t('कुछ चाहिए?','Need something?')}</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-orange" onclick="custCallWaiter()">🔔 ${t('Waiter बुलाओ','Call Waiter')}</button>
+        <button class="btn btn-red" onclick="custBillReq()">💳 ${t('Bill माँगो','Request Bill')}</button>
+      </div>
+    </div>`;
+  renderCustCatTabs();renderCustMenu();renderCustOrders();
+}
+
+function custTab(tab,btn){
+  document.querySelectorAll('#cust-shell .ntab').forEach(b=>b.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  g('cv-menu').style.display=tab==='menu'?'block':'none';
+  g('cv-status').style.display=tab==='status'?'block':'none';
+  if(tab==='status')renderCustOrders();
+}
+
+function renderCustCatTabs(){
+  const el=g('cc-ctabs');if(!el)return;
+  el.innerHTML=`<button class="ctab${custCat==='all'?' on':''}" onclick="setCC('all')">${t('सब','All')}</button>`+catsData.map(c=>`<button class="ctab${custCat===c?' on':''}" onclick="setCC('${c}')">${c}</button>`).join('');
+}
+function setCC(c){custCat=c;renderCustCatTabs();renderCustMenu();}
+
+function renderCustMenu(){
+  const el=g('cc-menu-list');if(!el)return;
+  const items=Object.entries(menuData).filter(([k,v])=>v&&v.available!==false&&(custCat==='all'||v.cat===custCat)).sort((a,b)=>(a[1].cat||'').localeCompare(b[1].cat||''));
+  if(!items.length){el.innerHTML=`<div class="empty"><div class="ei">🍽️</div><p>${t('कोई item नहीं','No items')}</p></div>`;return;}
+  el.innerHTML='';
+  items.forEach(([key,item])=>{
+    const ci=cart.find(c=>c.key===key),qty=ci?ci.qty:0;
+    const d=document.createElement('div');d.className='mitem';
+    d.innerHTML=`<div><div class="mn">${item.name}</div><div class="md">${item.cat} · ₹${item.price} · ~${item.time||10}min${item.desc?' · '+item.desc:''}</div></div>
+    <div class="qctrl"><button class="qbtn" onclick="chQty('${key}',-1)">−</button><span class="qnum">${qty}</span><button class="qbtn" onclick="chQty('${key}',1)">+</button></div>`;
+    el.appendChild(d);
+  });
+  renderCustCart();
+}
+function chQty(key,d){
+  const item=menuData[key];if(!item)return;
+  const ci=cart.find(c=>c.key===key);
+  if(ci){ci.qty+=d;if(ci.qty<=0)cart=cart.filter(c=>c.key!==key);}
+  else if(d>0)cart.push({key,name:item.name,price:item.price,time:item.time||15,qty:1});
+  renderCustMenu();
+}
+function renderCustCart(){
+  const el=g('cc-cart');const tel=g('cc-total');if(!el)return;
+  if(!cart.length){el.innerHTML=`<p style="font-size:13px;color:var(--text3)">${t('कोई item add नहीं किया','No items added')}</p>`;if(tel)tel.textContent='₹0';return;}
+  let tot=0;
+  el.innerHTML=cart.map(c=>{tot+=c.price*c.qty;return`<div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid var(--br)"><span style="color:var(--text2)">${c.name} ×${c.qty}</span><span style="font-weight:700;color:#fff">₹${c.price*c.qty}</span></div>`;}).join('');
+  if(tel)tel.textContent='₹'+tot;
+}
+function custPlaceOrder(){
+  if(!cart.length){toast(t('Cart में कुछ add करो!','Add items to cart!'));return;}
+  const note=g('cc-note')?g('cc-note').value:'';
+  const maxT=Math.max(...cart.map(c=>c.time));
+  const tot=cart.reduce((s,i)=>s+i.price*i.qty,0);
+  const oid='o'+Date.now();
+  const custName=currentCustName||'Guest';
+  const order={
+    id:oid,tableId:selTableId,
+    items:cart.map(c=>({key:c.key,name:c.name,price:c.price,qty:c.qty,time:c.time})),
+    note:note||'',status:'pending',time:Date.now(),estTime:maxT,
+    total:tot,customerName:custName
+  };
+  db.ref('hotels/'+HID+'/orders/'+oid).set(order);
+  db.ref('hotels/'+HID+'/tables/t'+selTableId).update({status:'ordered'});
+  addNotif('🛒 Table '+selTableId+' — Order ₹'+tot+' ('+custName+')');
+  cart=[];if(g('cc-note'))g('cc-note').value='';
+  toast(t('✅ Order भेज दिया! इंतज़ार करें...','✅ Order placed! Please wait...'));
+  custTab('status',g('ctab-status'));
+}
+function renderCustOrders(){
+  const el=g('cc-orders');if(!el||!selTableId)return;
+  const tOrds=Object.values(ordersData).filter(o=>o.tableId==selTableId);
+  if(!tOrds.length){el.innerHTML=`<div class="empty"><div class="ei">📋</div><p>${t('अभी कोई order नहीं','No orders yet')}</p></div>`;return;}
+  const sm={pending:'b-amber',preparing:'b-blue',ready:'b-blue',served:'b-green'};
+  const lm={pending:t('Pending ⏳','Pending ⏳'),preparing:t('बन रहा है 🔥','Cooking 🔥'),ready:t('Ready — आ रहा है 🚀','Ready — On Way 🚀'),served:t('Serve हो गया ✅','Served ✅')};
+  el.innerHTML=tOrds.sort((a,b)=>b.time-a.time).map(o=>{
+    const el2=Math.floor((Date.now()-o.time)/60000);
+    const pct=Math.min(100,Math.round(el2/(o.estTime||15)*100));
+    return`<div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--br)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span style="font-size:13px;font-weight:700;color:#fff">${(o.items||[]).map(i=>i.name+' ×'+i.qty).join(', ')}</span>
+        <span class="bdg ${sm[o.status]||'b-amber'}">${lm[o.status]||'Pending'}</span>
+      </div>
+      ${o.note?`<div style="font-size:11px;color:var(--text3);margin-bottom:3px">📝 ${o.note}</div>`:''}
+      <div style="font-size:12px;color:var(--text3)">Total: ₹${o.total}</div>
+      <div class="prog"><div class="prog-f" style="width:${pct}%"></div></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px">~${Math.max(0,(o.estTime||15)-el2)} ${t('min बाकी','min left')}</div>
+    </div>`;
+  }).join('');
+}
+function custCallWaiter(){db.ref('hotels/'+HID+'/tables/t'+selTableId).update({waiterCall:true});addNotif('🔔 Table '+selTableId+' — Waiter bulaya!');toast(t('Waiter आ रहा है! 🔔','Waiter is coming! 🔔'));}
+function custBillReq(){db.ref('hotels/'+HID+'/tables/t'+selTableId).update({billReq:true});addNotif('💳 Table '+selTableId+' — Bill manga!');toast(t('Bill आ रहा है! 💳','Bill is coming! 💳'));}
+
+// ══════════════════════════════════════════════════════
+//  FIREBASE LISTENERS
+// ══════════════════════════════════════════════════════
+function startAdminListeners(){
+  db.ref('hotels/'+HID).on('value',s=>{hotelData=s.val()||{};const el=g('bar-name');if(el)el.textContent=(hotelData.emoji||'🍽️')+' '+(hotelData.name||'Hotel');syncLocal();if(currentTab)renderTab(currentTab);});
+  db.ref('hotels/'+HID+'/tables').on('value',s=>{tablesData=s.val()||{};if(currentTab)renderTab(currentTab);});
+  db.ref('hotels/'+HID+'/orders').on('value',s=>{ordersData=s.val()||{};if(currentTab)renderTab(currentTab);});
+  db.ref('hotels/'+HID+'/menu').on('value',s=>{menuData=s.val()||{};syncLocal();if(currentTab==='menu'||currentTab==='cook-menu')renderTab(currentTab);});
+  db.ref('hotels/'+HID+'/categories').on('value',s=>{catsData=s.val()?Object.values(s.val()):['Main Course','Drinks'];syncLocal();});
+  db.ref('hotels/'+HID+'/notifications').on('value',s=>{notifData=s.val()?Object.values(s.val()).sort((a,b)=>b.ts-a.ts):[];});
+  db.ref('hotels/'+HID+'/staff').on('value',s=>{staffData=s.val()||{};syncLocal();});
+}
+function startCustDataListeners(){
+  db.ref('hotels/'+HID+'/tables').on('value',s=>{tablesData=s.val()||{};renderTableGrid();});
+  db.ref('hotels/'+HID+'/orders').on('value',s=>{ordersData=s.val()||{};renderCustOrders();});
+  db.ref('hotels/'+HID+'/menu').on('value',s=>{menuData=s.val()||{};renderCustMenu();});
+  db.ref('hotels/'+HID+'/categories').on('value',s=>{catsData=s.val()?Object.values(s.val()):['Main Course','Drinks'];renderCustCatTabs();});
+}
+
+// ══════════════════════════════════════════════════════
+//  ADMIN SHELL
+// ══════════════════════════════════════════════════════
+const ROLES={
+  owner:{label:'👑 मालिक',tabs:['owner','menu','settings','staff-mgmt']},
+  manager:{label:'📊 मैनेजर',tabs:['manager','menu','staff-mgmt']},
+  cook:{label:'👨‍🍳 Cook',tabs:['cook','cook-menu']},
+  waiter:{label:'🧑‍💼 Waiter',tabs:['waiter']}
+};
+let currentTab=null;
+
+function buildAdminShell(){
+  g('bar-name').textContent=(hotelData.emoji||'🍽️')+' '+(hotelData.name||'Hotel');
+  const roleLbl=currentWaiterName?('🧑‍💼 '+currentWaiterName):(ROLES[currentRole]?.label||currentRole);
+  g('bar-role').textContent=roleLbl;
+  const tabs=ROLES[currentRole]?.tabs||['waiter'];
+  const tabLabels={
+    owner:t('👑 Overview','👑 Overview'),
+    manager:t('📊 मैनेजर','📊 Manager'),
+    cook:t('👨‍🍳 किचन','👨‍🍳 Kitchen'),
+    'cook-menu':t('🍴 Menu देखें','🍴 View Menu'),
+    waiter:t('🧑‍💼 Waiter','🧑‍💼 Waiter'),
+    menu:t('🍴 Menu','🍴 Menu'),
+    settings:t('⚙️ Settings','⚙️ Settings'),
+    'staff-mgmt':t('👥 Staff','👥 Staff')
+  };
+  g('nav-bar').innerHTML=tabs.map((tab,i)=>`<button class="ntab${i===0?' on':''}" onclick="switchTab('${tab}',this)">${tabLabels[tab]||tab}</button>`).join('');
+  db.ref('.info/connected').on('value',s=>{const el=g('bar-live');if(el){el.textContent=s.val()?'🟢':'🔴';el.title=s.val()?'Live':'Offline';}});
+  showPage('app-shell');
+  switchTabByName(tabs[0]);
+}
+function switchTab(name,btn){
+  document.querySelectorAll('#nav-bar .ntab').forEach(b=>b.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  currentTab=name;renderTab(name);
+}
+function switchTabByName(name){currentTab=name;renderTab(name);}
+function renderTab(name){
+  const w=g('view-wrap');if(!w)return;
+  w.innerHTML='<div class="empty"><div class="ei">⏳</div><p>Loading...</p></div>';
+  ({owner:renderOwner,manager:renderManager,cook:renderCook,'cook-menu':renderCookMenu,waiter:renderWaiter,menu:renderMenuAdmin,settings:renderSettings,'staff-mgmt':renderStaffMgmt}[name]||function(){w.innerHTML='';})();
+}
+
+// ══════════════════════════════════════════════════════
+//  👑 OWNER VIEW — Earning visible only to owner
+// ══════════════════════════════════════════════════════
+function renderOwner(){
+  const w=g('view-wrap');
+  const all=Object.values(ordersData);
+  const served=all.filter(o=>o.status==='served');
+  const today=new Date().toDateString();
+  const todayServed=served.filter(o=>new Date(o.time).toDateString()===today);
+  const totalEarn=all.reduce((s,o)=>s+(o.total||0),0);
+  const todayEarn=todayServed.reduce((s,o)=>s+(o.total||0),0);
+  const pending=all.filter(o=>o.status==='pending'||o.status==='preparing').length;
+  const occ=Object.values(tablesData).filter(t=>t.status!=='empty').length;
+  const count=hotelData.tableCount||9;
+  const ds={};all.forEach(o=>(o.items||[]).forEach(it=>{ds[it.name]=(ds[it.name]||0)+it.qty;}));
+  const top=Object.entries(ds).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const mx=top.length?top[0][1]:1;
+  const dayE=[],dayL=[];
+  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);dayL.push(['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]);dayE.push(served.filter(o=>new Date(o.time).toDateString()===d.toDateString()).reduce((s,o)=>s+(o.total||0),0));}
+  const mxE=Math.max(...dayE,1);
+  let waiterHtml='';
+  const waiterOrders={};
+  all.forEach(o=>{if(o.waiterId){waiterOrders[o.waiterId]=(waiterOrders[o.waiterId]||0)+1;}});
+  Object.entries(staffData).forEach(([wid,w2])=>{
+    const cnt=waiterOrders[wid]||0;
+    const checkin=w2.lastCheckin?new Date(w2.lastCheckin).toLocaleTimeString('hi-IN',{hour:'2-digit',minute:'2-digit'}):'—';
+    waiterHtml+=`<div class="staff-card"><div class="staff-info"><div class="staff-name">${w2.name} <span class="bdg ${w2.online?'b-green':'b-gray'}">${w2.online?'Online':'Offline'}</span></div><div class="staff-meta">ID: ${wid} · In: ${checkin}</div></div><div style="font-family:'Baloo 2',sans-serif;font-size:20px;font-weight:800;color:var(--teal)">${cnt}<div style="font-size:10px;color:var(--text3)">Orders</div></div></div>`;
+  });
+  w.innerHTML=`
+    <div class="sg sg4">
+      <div class="sbox red"><div class="snum">${all.length}</div><div class="slbl">${t('कुल Orders','Total Orders')}</div></div>
+      <div class="sbox green"><div class="snum">₹${todayEarn}</div><div class="slbl">${t('आज','Today')}</div></div>
+      <div class="sbox blue"><div class="snum">${occ}/${count}</div><div class="slbl">Tables</div></div>
+      <div class="sbox orange"><div class="snum">${pending}</div><div class="slbl">Pending</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">💰 ${t('कुल कमाई','Total Earnings')}</div>
+      <div style="font-family:'Baloo 2',sans-serif;font-size:46px;font-weight:800;color:var(--teal);line-height:1;margin:6px 0 2px">₹${totalEarn}</div>
+      <div style="font-size:13px;color:var(--text2)">${t('आज','Today')}: ₹${todayEarn} · ${t('कुल','Total')}: ₹${totalEarn}</div>
+    </div>
+    <div class="card">
+      <div class="card-title">📈 ${t('7 दिन की कमाई','7-Day Earnings')}</div>
+      <div class="chart-wrap">${dayE.map((e)=>`<div class="cbar" style="height:${Math.max(3,Math.round(e/mxE*100))}%"><div class="cbar-tip">₹${e}</div></div>`).join('')}</div>
+      <div class="cbarlbl">${dayL.map(l=>`<span>${l}</span>`).join('')}</div>
+    </div>
+    <div class="card">
+      <div class="card-title">🏆 ${t('Top Dishes','Top Dishes')}</div>
+      ${top.length?top.map((d,i)=>`<div class="drank"><div class="drnum">#${i+1}</div><div style="flex:1"><div style="font-size:13px;font-weight:700;color:#fff">${d[0]}</div><div class="drbar"><div class="drbar-f" style="width:${Math.round(d[1]/mx*100)}%"></div></div></div><div style="font-size:13px;font-weight:800;color:var(--orange)">${d[1]}</div></div>`).join(''):'<div class="empty"><div class="ei">📊</div><p>—</p></div>'}
+    </div>
+    <div class="card"><div class="card-title">👥 ${t('Waiter Performance','Waiter Performance')}</div>${waiterHtml||'<div class="empty"><p>—</p></div>'}</div>
+    <div class="card"><div class="card-title">🔔 Notifications <button class="btn btn-ghost btn-sm" onclick="clrNotifs()">Clear</button></div>${notifData.length?notifData.slice(0,10).map(n=>`<div class="nrow"><span>${n.msg}</span><span class="ntime">${n.time}</span></div>`).join(''):'<div class="empty"><div class="ei">🔕</div><p>—</p></div>'}</div>`;
+}
+
+// ══════════════════════════════════════════════════════
+//  📊 MANAGER VIEW — NO earning shown
+// ══════════════════════════════════════════════════════
+function renderManager(){
+  const w=g('view-wrap');
+  const all=Object.values(ordersData);
+  const occ=Object.values(tablesData).filter(t=>t.status!=='empty').length;
+  const pending=all.filter(o=>o.status==='pending'||o.status==='preparing').length;
+  const served=all.filter(o=>o.status==='served').length;
+  const count=hotelData.tableCount||9;
+  const sm={empty:'b-green',ordered:'b-amber',occupied:'b-red',ready:'b-blue'};
+  const lm={empty:t('खाली','Empty'),ordered:'Order',occupied:t('Busy','Busy'),ready:'Ready'};
+  let tHtml='',oHtml='',waiterStatusHtml='';
+  for(let i=1;i<=count;i++){
+    const tb=tablesData['t'+i]||{status:'empty'};
+    const tOrds=Object.values(ordersData).filter(o=>o.tableId==i&&o.status!=='served');
+    tHtml+=`<div class="lrow"><div><span style="font-weight:700;color:#fff">Table ${i}</span>${tb.waiterCall?' 🔔':''}${tb.billReq?' 💳':''}${tOrds.length?`<div style="font-size:11px;color:var(--text3)">${tOrds.map(o=>'👤 '+(o.customerName||'Guest')+': '+(o.items||[]).map(x=>x.name+' ×'+x.qty).join(', ')).join(' | ')}</div>`:''}</div><div class="lrow-actions"><span class="bdg ${sm[tb.status]||'b-green'}">${lm[tb.status]||t('खाली','Empty')}</span>${tb.status!=='empty'?`<button class="btn btn-ghost btn-sm" onclick="clrTable(${i})">Clear</button>`:''}</div></div>`;
+  }
+  all.sort((a,b)=>b.time-a.time).slice(0,15).forEach(o=>{
+    const sm2={pending:'b-amber',preparing:'b-blue',ready:'b-blue',served:'b-green'};
+    const lm2={pending:'Pending',preparing:'Cooking',ready:'Ready',served:'Served'};
+    oHtml+=`<div class="lrow"><div><span style="font-weight:700;color:#fff">Table ${o.tableId}</span> <span style="font-size:11px;color:var(--text3)">👤 ${o.customerName||'Guest'}</span><div style="font-size:11px;color:var(--text3)">${(o.items||[]).map(i=>i.name+' ×'+i.qty).join(', ')}</div>${o.waiterId?`<div style="font-size:10px;color:var(--text3)">Waiter: ${staffData[o.waiterId]?.name||o.waiterId}</div>`:''}</div><span class="bdg ${sm2[o.status]||'b-amber'}">${lm2[o.status]||'—'}</span></div>`;
+  });
+  Object.entries(staffData).forEach(([wid,wt])=>{
+    const cnt=Object.values(ordersData).filter(o=>o.waiterId===wid).length;
+    waiterStatusHtml+=`<div class="lrow"><div><span style="font-weight:700;color:#fff">${wt.name}</span> <span class="bdg ${wt.online?'b-green':'b-gray'}">${wt.online?'Online':'Offline'}</span><div style="font-size:11px;color:var(--text3)">ID: ${wid}</div></div><span style="font-size:13px;font-weight:700;color:var(--blue)">${cnt} orders</span></div>`;
+  });
+  w.innerHTML=`
+    <div class="sg sg4">
+      <div class="sbox red"><div class="snum">${all.length}</div><div class="slbl">${t('कुल Orders','Total Orders')}</div></div>
+      <div class="sbox blue"><div class="snum">${occ}/${count}</div><div class="slbl">Tables</div></div>
+      <div class="sbox orange"><div class="snum">${pending}</div><div class="slbl">Pending</div></div>
+      <div class="sbox green"><div class="snum">${served}</div><div class="slbl">Served</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="card"><div class="card-title">🪑 Tables</div>${tHtml||'—'}</div>
+      <div class="card"><div class="card-title">📦 Orders</div>${oHtml||'<div class="empty"><div class="ei">📭</div><p>—</p></div>'}</div>
+    </div>
+    <div class="card"><div class="card-title">🧑‍💼 Waiter Status</div>${waiterStatusHtml||'<div class="empty"><p>—</p></div>'}</div>
+    <div class="card"><div class="card-title">🔔 Notifications <button class="btn btn-ghost btn-sm" onclick="clrNotifs()">Clear</button></div>${notifData.length?notifData.slice(0,10).map(n=>`<div class="nrow"><span>${n.msg}</span><span class="ntime">${n.time}</span></div>`).join(''):'<div class="empty"><div class="ei">🔕</div><p>—</p></div>'}</div>`;
+}
+
+// ══════════════════════════════════════════════════════
+//  👨‍🍳 COOK VIEW
+// ══════════════════════════════════════════════════════
+function renderCook(){
+  const w=g('view-wrap');
+  const pend=Object.values(ordersData).filter(o=>o.status==='pending'||o.status==='preparing').sort((a,b)=>a.time-b.time);
+  if(!pend.length){w.innerHTML=`<div class="empty" style="padding-top:4rem"><div class="ei">✅</div><p>${t('कोई pending order नहीं','No pending orders')}<br>${t('किचन साफ है 🎉','Kitchen is clear 🎉')}</p></div>`;return;}
+  w.innerHTML=pend.map(o=>{
+    const el=Math.floor((Date.now()-o.time)/60000);
+    const urg=el>=(o.estTime||15)*0.8;
+    return`<div class="ocard ${urg?'urgent':o.status==='preparing'?'cooking':''}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div style="font-size:17px;font-weight:800;color:#fff;font-family:'Baloo 2',sans-serif">🪑 Table ${o.tableId}${urg?` <span style="color:var(--red);font-size:12px">⚠️ URGENT</span>`:''}</div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:6px">👤 ${o.customerName||'Guest'}</div>
+          <div>${(o.items||[]).map(i=>`<div style="font-size:13px;color:var(--text2);margin-bottom:2px">• <strong style="color:#fff">${i.name}</strong> × ${i.qty} <span style="color:var(--text3)">~${i.time||15}min</span></div>`).join('')}</div>
+          ${o.note?`<div style="font-size:12px;color:var(--orange);background:rgba(255,165,2,.08);padding:6px 10px;border-radius:8px;margin-top:8px">📝 ${o.note}</div>`:''}
+          <div style="font-size:12px;color:var(--text3);margin-top:8px">Est: ~${o.estTime||15}min · ${el}min ${t('पहले आया','ago')}</div>
+        </div>
+        <span class="bdg ${o.status==='pending'?'b-amber':'b-blue'}">${o.status==='pending'?t('नया','New'):t('Cooking','Cooking')}</span>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        ${o.status==='pending'
+          ?`<button class="btn btn-orange" onclick="cookStart('${o.id}')">🔥 ${t('Banana Shuru','Start Cooking')}</button>`
+          :`<button class="btn btn-green" onclick="cookReady('${o.id}',${o.tableId})">✅ ${t('Ready — Waiter Ko Do','Ready — Give to Waiter')}</button>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+function cookStart(oid){db.ref('hotels/'+HID+'/orders/'+oid).update({status:'preparing'});addNotif('🔥 Table '+(ordersData[oid]?.tableId)+' — Banana shuru');toast(t('Cooking shuru! 🔥','Cooking started! 🔥'));}
+function cookReady(oid,tid){db.ref('hotels/'+HID+'/orders/'+oid).update({status:'ready'});db.ref('hotels/'+HID+'/tables/t'+tid).update({status:'ready'});addNotif('🚀 Table '+tid+' — Order ready!');toast(t('Ready! 🚀','Ready! 🚀'));}
+
+function renderCookMenu(){
+  const w=g('view-wrap');
+  const cats=['all',...catsData];
+  const items=Object.entries(menuData).filter(([k,v])=>adminCat==='all'||v.cat===adminCat);
+  const catBtns=cats.map(c=>`<button class="ctab${adminCat===c?' on':''}" onclick="setAC('${c}')">${c==='all'?t('सब','All'):c}</button>`).join('');
+  w.innerHTML=`<div class="card"><div class="card-title">🍴 Menu (${t('देखें only','View only')})</div><div class="ctabs">${catBtns}</div>${items.length?items.map(([k,v])=>`<div class="lrow"><div><div style="font-weight:700;color:#fff">${v.name}</div><div style="font-size:11px;color:var(--text3)">${v.cat} · ₹${v.price} · ~${v.time||10}min${v.desc?' · '+v.desc:''}</div></div><span class="bdg ${v.available?'b-green':'b-gray'}">${v.available?'Available':'Off'}</span></div>`).join(''):'<div class="empty"><p>—</p></div>'}</div>`;
+}
+
+// ══════════════════════════════════════════════════════
+//  🧑‍💼 WAITER VIEW
+// ══════════════════════════════════════════════════════
+function renderWaiter(){
+  const w=g('view-wrap');
+  const count=hotelData.tableCount||9;
+  let calls=0,bills=0;
+  for(let i=1;i<=count;i++){const tb=tablesData['t'+i]||{};if(tb.waiterCall)calls++;if(tb.billReq)bills++;}
+  const readyO=Object.values(ordersData).filter(o=>o.status==='ready');
+  let alerts='',readyH='',tH='';
+  for(let i=1;i<=count;i++){
+    const tb=tablesData['t'+i]||{};
+    if(tb.waiterCall)alerts+=`<div class="ocard urgent"><div style="display:flex;justify-content:space-between;align-items:center"><div>🔔 <strong>Table ${i}</strong> — ${t('Waiter बुलाया!','Waiter called!')}</div><button class="btn btn-ghost btn-sm" onclick="clrWaiter(${i})">✓ Done</button></div></div>`;
+    if(tb.billReq)alerts+=`<div class="ocard cooking"><div style="display:flex;justify-content:space-between;align-items:center"><div>💳 <strong>Table ${i}</strong> — ${t('Bill माँगा!','Bill requested!')}</div><button class="btn btn-ghost btn-sm" onclick="clrBill(${i})">✓ ${t('दिया','Done')}</button></div></div>`;
+  }
+  readyO.forEach(o=>{readyH+=`<div class="lrow"><div><span style="font-weight:700;color:#fff">Table ${o.tableId}</span> <span class="bdg b-blue">Ready</span><div style="font-size:11px;color:var(--text3)">${(o.items||[]).map(i=>i.name+' ×'+i.qty).join(', ')}</div><div style="font-size:11px;color:var(--blue)">👤 ${o.customerName||'Guest'}</div></div><button class="btn btn-green btn-sm" onclick="waiterServed('${o.id}',${o.tableId})">✅ Serve</button></div>`;});
+  const sm3={empty:'b-green',ordered:'b-amber',occupied:'b-red',ready:'b-blue'};
+  const lm3={empty:t('खाली','Empty'),ordered:'Order',occupied:t('Busy','Busy'),ready:'Ready'};
+  for(let i=1;i<=count;i++){
+    const tb=tablesData['t'+i]||{status:'empty'};
+    const tOrds=Object.values(ordersData).filter(o=>o.tableId==i&&o.status!=='served');
+    tH+=`<div class="lrow"><div><span style="font-weight:700;color:#fff">Table ${i}</span>${tb.waiterCall?' 🔔':''}${tb.billReq?' 💳':''}${tOrds.length?`<div style="font-size:11px;color:var(--text3)">${tOrds.map(o=>'👤 '+(o.customerName||'Guest')+': '+(o.items||[]).map(x=>x.name+' ×'+x.qty).join(', ')).join(' | ')}</div>`:''}</div><div class="lrow-actions"><span class="bdg ${sm3[tb.status]||'b-green'}">${lm3[tb.status]||t('खाली','Empty')}</span>${tb.status!=='empty'?`<button class="btn btn-ghost btn-sm" onclick="clrTable(${i})">Clear</button>`:''}</div></div>`;
+  }
+  w.innerHTML=`
+    <div class="sg sg3">
+      <div class="sbox red"><div class="snum">${calls}</div><div class="slbl">Calls</div></div>
+      <div class="sbox orange"><div class="snum">${bills}</div><div class="slbl">Bills</div></div>
+      <div class="sbox blue"><div class="snum">${readyO.length}</div><div class="slbl">Serve</div></div>
+    </div>
+    ${alerts}
+    ${readyH?`<div class="card"><div class="card-title">🚀 ${t('Ready to Serve','Ready to Serve')}</div>${readyH}</div>`:''}
+    <div class="card"><div class="card-title">🪑 ${t('सभी Tables','All Tables')}</div>${tH}</div>
+    <div class="card"><div class="card-title">🔔 Notifications</div>${notifData.length?notifData.slice(0,5).map(n=>`<div class="nrow"><span>${n.msg}</span><span class="ntime">${n.time}</span></div>`).join(''):'<div class="empty"><div class="ei">🔕</div><p>—</p></div>'}</div>`;
+}
+function waiterServed(oid,tid){db.ref('hotels/'+HID+'/orders/'+oid).update({status:'served'});db.ref('hotels/'+HID+'/tables/t'+tid).update({status:'occupied'});addNotif('✅ Table '+tid+' — Served!');toast('Served! ✅');}
+function clrWaiter(tid){db.ref('hotels/'+HID+'/tables/t'+tid).update({waiterCall:false});toast('✓ Done!');}
+function clrBill(tid){db.ref('hotels/'+HID+'/tables/t'+tid).update({billReq:false});toast(t('Bill diya!','Bill given!'));}
+function clrTable(tid){db.ref('hotels/'+HID+'/tables/t'+tid).set({id:tid,status:'empty',waiterCall:false,billReq:false});toast('Table clear!');}
+
+// ══════════════════════════════════════════════════════
+//  🍴 MENU ADMIN (owner + manager can edit)
+// ══════════════════════════════════════════════════════
+function renderMenuAdmin(){
+  const w=g('view-wrap');
+  const cats=['all',...catsData];
+  const catBtns=cats.map(c=>`<button class="ctab${adminCat===c?' on':''}" onclick="setAC('${c}')">${c==='all'?t('सब','All'):c}</button>`).join('');
+  const items=Object.entries(menuData).filter(([k,v])=>adminCat==='all'||v.cat===adminCat);
+  const itemsHtml=items.length?`<div>${items.map(([key,item])=>`<div class="lrow"><div><div style="font-weight:700;color:#fff">${item.name} ${item.available?'':' <span class="bdg b-red">Off</span>'}</div><div style="font-size:11px;color:var(--text3)">${item.cat} · ₹${item.price} · ~${item.time||10}min${item.desc?' · '+item.desc:''}</div></div><div class="lrow-actions"><button class="btn btn-ghost btn-sm" onclick="openEditDish('${key}')">✏️</button><button class="btn btn-danger btn-sm" onclick="delDish('${key}')">🗑</button></div></div>`).join('')}</div>`:'<div class="empty"><div class="ei">🍽️</div><p>—</p></div>';
+  w.innerHTML=`
+    <div class="card">
+      <div class="card-title">🍴 Menu <button class="btn btn-red btn-sm" onclick="openAddDish()">+ ${t('Dish Add','Add Dish')}</button></div>
+      <div class="ctabs">${catBtns}</div>
+      ${itemsHtml}
+    </div>
+    <div class="card">
+      <div class="card-title">📁 Categories</div>
+      ${catsData.map(c=>`<div class="lrow"><span style="color:#fff">${c}</span><button class="btn btn-ghost btn-sm" onclick="delCat('${c}')">Delete</button></div>`).join('')}
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <input id="new-cat" placeholder="${t('नई category...','New category...')}" style="flex:1;padding:10px;background:var(--s2);border:1.5px solid var(--br);border-radius:var(--r2);color:var(--text);font-size:14px;outline:none">
+        <button class="btn btn-blue btn-sm" onclick="addCat()">+ ${t('Add','Add')}</button>
+      </div>
+    </div>`;
+}
+function setAC(c){adminCat=c;renderTab(currentTab);}
+function openAddDish(){
+  g('mod-dish-title').textContent=t('🍴 Dish Add','🍴 Add Dish');
+  g('dk').value='';
+  ['d-name','d-desc'].forEach(id=>g(id).value='');
+  g('d-price').value='';g('d-time').value='15';g('d-avail').checked=true;
+  fillDCat('');openMod('mod-dish');
+}
+function openEditDish(key){
+  const item=menuData[key];if(!item)return;
+  g('mod-dish-title').textContent=t('✏️ Dish Edit','✏️ Edit Dish');
+  g('dk').value=key;g('d-name').value=item.name;g('d-price').value=item.price;g('d-time').value=item.time||15;g('d-desc').value=item.desc||'';g('d-avail').checked=item.available!==false;
+  fillDCat(item.cat);openMod('mod-dish');
+}
+function fillDCat(sel){
+  const el=g('d-cat');el.innerHTML='';
+  catsData.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;el.appendChild(o);});
+  if(sel)el.value=sel;
+}
+function saveDish(){
+  const key=g('dk').value;
+  const name=g('d-name').value.trim(),price=parseInt(g('d-price').value),cat=g('d-cat').value;
+  const time=parseInt(g('d-time').value)||15,desc=g('d-desc').value.trim(),available=g('d-avail').checked;
+  if(!name||!price){toast(t('नाम और price ज़रूरी!','Name and price required!'));return;}
+  if(key)db.ref('hotels/'+HID+'/menu/'+key).update({name,price,cat,time,desc,available});
+  else db.ref('hotels/'+HID+'/menu/d'+Date.now()).set({name,price,cat,time,desc,available,sold:0});
+  closeMod('mod-dish');toast(t('✅ Dish save ho gayi!','✅ Dish saved!'));
+}
+function delDish(key){if(!confirm(t('Delete करें?','Delete this dish?')))return;db.ref('hotels/'+HID+'/menu/'+key).remove();toast(t('Dish delete!','Dish deleted!'));}
+function addCat(){
+  const val=g('new-cat').value.trim();
+  if(!val){toast(t('Category नाम डालो!','Enter category name!'));return;}
+  if(catsData.includes(val)){toast(t('पहले से है!','Already exists!'));return;}
+  const nc=[...catsData,val];let obj={};nc.forEach((c,i)=>obj['c'+i]=c);
+  db.ref('hotels/'+HID+'/categories').set(obj);g('new-cat').value='';toast(t('Category add!','Category added!'));
+}
+function delCat(cat){
+  if(!confirm(cat+t(' delete?',' delete?')))return;
+  const nc=catsData.filter(c=>c!==cat);let obj={};nc.forEach((c,i)=>obj['c'+i]=c);
+  db.ref('hotels/'+HID+'/categories').set(obj);
+  Object.entries(menuData).forEach(([k,v])=>{if(v.cat===cat)db.ref('hotels/'+HID+'/menu/'+k).remove();});
+  toast(t('Category delete!','Category deleted!'));
+}
+
+// ══════════════════════════════════════════════════════
+//  👥 STAFF MANAGEMENT
+// ══════════════════════════════════════════════════════
+function renderStaffMgmt(){
+  const w=g('view-wrap');
+  const staffList=Object.entries(staffData);
+  const isOwner=currentRole==='owner';
+  const canManageWaiter=currentRole==='owner'||currentRole==='manager';
+  let staffControlHtml='';
+  if(isOwner){
+    const enabled=hotelData.staffEnabled||{};
+    staffControlHtml=`<div class="card" style="border-color:rgba(255,165,2,.3)">
+      <div class="card-title">🔐 Staff Account On/Off</div>
+      <p style="font-size:11px;color:var(--text3);margin-bottom:12px">${t('जिसे बंद करोगे वो login नहीं कर पाएगा','Disabled accounts cannot login')}</p>
+      ${['manager','cook'].map(r=>{
+        const on=enabled[r]!==false;
+        const lbl={manager:'📊 मैनेजर',cook:'👨‍🍳 Cook'}[r];
+        return`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--br)">
+          <span style="font-weight:700;color:#fff">${lbl}</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="bdg ${on?'b-green':'b-red'}">${on?t('चालू','Active'):t('बंद','Off')}</span>
+            <button class="btn ${on?'btn-danger':'btn-green'} btn-sm" onclick="toggleStaffRole('${r}',${on})">${on?t('बंद करो','Disable'):t('चालू करो','Enable')}</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+  let sHtml=staffList.length?staffList.map(([wid,wt])=>{
+    const isOn=wt.enabled!==false;
+    return`<div class="staff-card">
+      <div class="staff-info">
+        <div class="staff-name">${wt.name}
+          <span class="bdg ${wt.online?'b-green':'b-gray'}">${wt.online?'Online':'Offline'}</span>
+          <span class="bdg ${isOn?'b-green':'b-red'}">${isOn?t('Active','Active'):t('बंद','Off')}</span>
+        </div>
+        <div class="staff-meta">ID: <strong style="color:var(--orange)">${wid}</strong> · PIN: ${wt.pin} · 📞 ${wt.phone||'—'}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-direction:column;align-items:flex-end">
+        ${canManageWaiter?`<button class="btn btn-blue btn-sm" onclick="openEditWaiter('${wid}')">✏️ Edit</button>`:''}
+        ${canManageWaiter?`<button class="btn ${isOn?'btn-danger':'btn-green'} btn-sm" onclick="toggleWaiter('${wid}',${isOn})">${isOn?t('बंद','Off'):t('चालू','On')}</button>`:''}
+        ${isOwner?`<button class="btn btn-danger btn-sm" onclick="deleteStaff('${wid}')">🗑</button>`:''}
+      </div>
+    </div>`;
+  }).join(''):`<div class="empty"><div class="ei">👥</div><p>${t('कोई waiter registered नहीं','No waiters registered')}</p></div>`;
+  w.innerHTML=staffControlHtml+`
+    <div class="card">
+      <div class="card-title">🧑‍💼 Waiter IDs ${canManageWaiter?`<button class="btn btn-red btn-sm" onclick="openAddWaiter()">+ ${t('Waiter Add करें','Add Waiter')}</button>`:''}</div>
+      ${canManageWaiter?`<div style="background:rgba(30,144,255,.07);border:1px solid rgba(30,144,255,.2);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--text2)">💡 ${t('नीचे दी गई ID और PIN Waiter को दें — वो इससे login करेंगे','Give the ID & PIN below to Waiter — they will login with this')}</div>`:''} 
+      ${sHtml}
+    </div>`;
+}
+function toggleStaffRole(role,currentlyOn){db.ref('hotels/'+HID+'/staffEnabled/'+role).set(!currentlyOn);toast((!currentlyOn?'✅ ':'🔴 ')+role+((!currentlyOn)?t(' चालू!',' enabled!'):t(' बंद!',' disabled!')));}
+function toggleWaiter(wid,currentlyOn){db.ref('hotels/'+HID+'/staff/'+wid).update({enabled:!currentlyOn,online:false});toast((currentlyOn?'🔴 ':'✅ ')+wid+(currentlyOn?t(' बंद किया!',' disabled!'):t(' चालू किया!',' enabled!')));}
+function openAddWaiter(){
+  // Auto-suggest next waiter ID
+  const existingIds=Object.keys(staffData);
+  let nextNum=1;
+  while(existingIds.includes('W'+String(nextNum).padStart(3,'0')))nextNum++;
+  const suggestId='W'+String(nextNum).padStart(3,'0');
+  showGenMod(`<div class="modal-drag"></div>
+    <div class="modal-title">🧑‍💼 ${t('नया Waiter Add करें','Add New Waiter')}</div>
+    <div class="fld"><label>Waiter ID * <span style="font-size:10px;color:var(--teal)">(auto-suggest: ${suggestId})</span></label><input id="nw-id" placeholder="${suggestId}" value="${suggestId}" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"></div>
+    <div class="fld"><label>${t('नाम','Name')} *</label><input id="nw-name" placeholder="Ramesh Kumar"></div>
+    <div class="fld"><label>Mobile</label><input id="nw-phone" type="tel" placeholder="9876543210"></div>
+    <div class="fld"><label>PIN (4-6 ${t('अंक','digits')}) *</label><input id="nw-pin" type="tel" placeholder="5678" maxlength="6" inputmode="numeric"></div>
+    <div style="background:rgba(46,213,115,.07);border:1px solid rgba(46,213,115,.2);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--text2)">
+      💡 ${t('यह ID और PIN Waiter को दें — वो Waiter login में इनसे login करेंगे','Give this ID & PIN to the Waiter for their login')}
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-red" style="flex:1" onclick="saveWaiter()">✓ ${t('Add करें','Add')}</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="closeGenMod()">Cancel</button>
+    </div>`);
+}
+function openEditWaiter(wid){
+  const wt=staffData[wid];if(!wt)return;
+  showGenMod(`<div class="modal-drag"></div>
+    <div class="modal-title">✏️ ${t('Waiter Edit करें','Edit Waiter')}</div>
+    <div class="fld"><label>Waiter ID</label><input value="${wid}" disabled style="width:100%;padding:10px 13px;background:var(--s3);border:1.5px solid var(--br);border-radius:var(--r2);color:var(--text3);font-size:14px;font-family:'Mukta',sans-serif"></div>
+    <div class="fld"><label>${t('नाम','Name')} *</label><input id="ew-name" value="${wt.name||''}"></div>
+    <div class="fld"><label>Mobile</label><input id="ew-phone" type="tel" value="${wt.phone||''}"></div>
+    <div class="fld"><label>${t('नया PIN (खाली छोड़ें = same रहेगा)','New PIN (leave blank = keep same)')}</label><input id="ew-pin" type="tel" placeholder="${t('नया PIN...','New PIN...')}" maxlength="6" inputmode="numeric"></div>
+    <div style="background:rgba(255,165,2,.07);border:1px solid rgba(255,165,2,.2);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--text2)">
+      🔑 ${t('मौजूदा PIN:','Current PIN:')} <strong style="color:var(--orange)">${wt.pin}</strong>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-blue" style="flex:1" onclick="saveEditWaiter('${wid}','${wt.pin}')">✓ ${t('Save करें','Save')}</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="closeGenMod()">Cancel</button>
+    </div>`);
+}
+function saveEditWaiter(wid,oldPin){
+  const name=(g('ew-name').value||'').trim();
+  const phone=(g('ew-phone').value||'').trim();
+  const newPin=(g('ew-pin').value||'').trim();
+  if(!name){toast(t('नाम ज़रूरी है!','Name is required!'));return;}
+  const pin=newPin||oldPin;
+  db.ref('hotels/'+HID+'/staff/'+wid).update({name,phone,pin});
+  closeGenMod();
+  toast('✅ '+name+t(' update ho gaya!',' updated!'));
+}
+function saveWaiter(){
+  const wid=(g('nw-id').value||'').trim().toUpperCase();
+  const name=(g('nw-name').value||'').trim();
+  const phone=(g('nw-phone').value||'').trim();
+  const pin=(g('nw-pin').value||'').trim();
+  if(!wid||!name||!pin){toast(t('ID, नाम और PIN ज़रूरी!','ID, name & PIN required!'));return;}
+  db.ref('hotels/'+HID+'/staff/'+wid).set({name,phone,pin,createdAt:Date.now(),online:false,enabled:true});
+  closeGenMod();toast('✅ '+name+t(' add ho gaya! ID: ',' added! ID: ')+wid);
+}
+function deleteStaff(wid){if(!confirm(wid+t(' ko delete karein?',' delete?')))return;db.ref('hotels/'+HID+'/staff/'+wid).remove();toast(t('Staff deleted!','Staff deleted!'));}
+
+// ══════════════════════════════════════════════════════
+//  ⚙️ SETTINGS (Owner only for PIN & Reset)
+// ══════════════════════════════════════════════════════
+function renderSettings(){
+  const w=g('view-wrap');
+  const base=location.origin+location.pathname;
+  const count=hotelData.tableCount||9;
+  const custUrl=base+'?hotel='+HID+'&c=1';
+  const staffUrl=base+'?hotel='+HID;
+  const isOwner=currentRole==='owner';
+  w.innerHTML=`
+    <div class="card">
+      <div class="card-title">🏨 ${t('Hotel Details','Hotel Details')}</div>
+      <div class="fld"><label>${t('होटल का नाम','Hotel Name')}</label><input id="s-name" value="${hotelData.name||''}"></div>
+      <div class="fld"><label>${t('पता','Address')}</label><input id="s-addr" value="${hotelData.addr||''}"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="fld"><label>Phone</label><input id="s-phone" value="${hotelData.phone||''}"></div>
+        <div class="fld"><label>Emoji</label><input id="s-emoji" value="${hotelData.emoji||'🍽️'}"></div>
+      </div>
+      <div class="fld"><label>Tables (1-30)</label><input id="s-tables" type="number" value="${count}" min="1" max="30"></div>
+      <button class="btn btn-green" style="margin-top:12px" onclick="saveSettings()">✓ ${t('Save','Save')}</button>
+    </div>
+    ${isOwner?`
+    <div class="card">
+      <div class="card-title">🔐 ${t('Staff PINs Change','Change Staff PINs')}</div>
+      ${['owner','manager','cook'].map(r=>`<div class="fld"><label>${{owner:'👑 मालिक',manager:'📊 मैनेजर',cook:'👨‍🍳 Cook'}[r]} PIN</label><input id="pe-${r}" value="${(hotelData.pins||{})[r]||''}" maxlength="6" type="tel"></div>`).join('')}
+      <button class="btn btn-blue btn-sm" onclick="savePins()">✓ Save PINs</button>
+    </div>`:''}
+    <div class="card">
+      <div class="card-title">📱 Links</div>
+      <div class="section-lbl">${t('Customer Link','Customer Link')}</div>
+      <div class="url-box">${custUrl}</div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="copyText('${custUrl}')">📋 Copy</button>
+      <div class="section-lbl">${t('Staff Login Link','Staff Login Link')}</div>
+      <div class="url-box">${staffUrl}</div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="copyText('${staffUrl}')">📋 Copy</button>
+    </div>
+    ${isOwner?`
+    <div class="card" style="border-color:rgba(255,71,87,.3)">
+      <div class="card-title" style="color:var(--red)">⚠️ ${t('Reset','Reset')}</div>
+      <button class="btn btn-danger btn-sm" onclick="resetOrders()">🗑️ ${t('सारे Orders Reset','Reset All Orders')}</button>
+    </div>`:''}`;
+}
+function saveSettings(){
+  const name=g('s-name').value.trim();if(!name){toast(t('नाम ज़रूरी!','Name required!'));return;}
+  const count=parseInt(g('s-tables').value)||9,existing=Object.keys(tablesData).length;
+  db.ref('hotels/'+HID).update({name,addr:g('s-addr').value.trim(),phone:g('s-phone').value.trim(),emoji:g('s-emoji').value.trim()||'🍽️',tableCount:count});
+  if(count!==existing){let obj={};for(let i=1;i<=count;i++)obj['t'+i]=tablesData['t'+i]||{id:i,status:'empty',waiterCall:false,billReq:false};db.ref('hotels/'+HID+'/tables').set(obj);}
+  toast(t('✅ Settings save!','✅ Settings saved!'));
+}
+function savePins(){
+  const pins={owner:g('pe-owner').value,manager:g('pe-manager').value,cook:g('pe-cook').value};
+  db.ref('hotels/'+HID+'/pins').update(pins);toast(t('✅ PINs update ho gaye!','✅ PINs updated!'));
+}
+function resetOrders(){
+  if(!confirm(t('सारे orders delete करें?','Delete all orders?')))return;
+  db.ref('hotels/'+HID+'/orders').remove();
+  db.ref('hotels/'+HID+'/notifications').remove();
+  const count=hotelData.tableCount||9;
+  for(let i=1;i<=count;i++)db.ref('hotels/'+HID+'/tables/t'+i).update({status:'empty',waiterCall:false,billReq:false});
+  toast(t('✅ Reset!','✅ Reset!'));
+}
+
+// ══════════════════════════════════════════════════════
+//  REGISTER
+// ══════════════════════════════════════════════════════
+function registerHotel(){
+  const name=g('r-name').value.trim();
+  if(!name){toast(t('होटल नाम ज़रूरी!','Hotel name required!'));return;}
+  const addr=g('r-addr').value.trim(),phone=g('r-phone').value.trim();
+  const tables=parseInt(g('r-tables').value)||9,emoji=g('r-emoji').value.trim()||'🍽️';
+  const pins={owner:g('r-pin-owner').value||'1111',manager:g('r-pin-mgr').value||'2222',cook:g('r-pin-cook').value||'3333',waiter:g('r-pin-waiter').value||'4444'};
+  const hid='hotel_'+Date.now(),ts=Date.now();
+  const defMenu={
+    [ts+'_1']:{name:'Samosa (2 pcs)',price:60,cat:'Starters',time:10,desc:'Crispy aur chatpata',available:true,sold:0},
+    [ts+'_2']:{name:'Paneer Tikka',price:180,cat:'Starters',time:15,desc:'Tandoor mein bana',available:true,sold:0},
+    [ts+'_3']:{name:'Dal Makhani',price:160,cat:'Main Course',time:20,desc:'Rich aur creamy',available:true,sold:0},
+    [ts+'_4']:{name:'Paneer Butter Masala',price:200,cat:'Main Course',time:20,desc:'',available:true,sold:0},
+    [ts+'_5']:{name:'Veg Biryani',price:180,cat:'Main Course',time:25,desc:'',available:true,sold:0},
+    [ts+'_6']:{name:'Naan (2 pcs)',price:50,cat:'Breads',time:10,desc:'',available:true,sold:0},
+    [ts+'_7']:{name:'Masala Chai',price:30,cat:'Drinks',time:5,desc:'',available:true,sold:0},
+    [ts+'_8']:{name:'Cold Coffee',price:80,cat:'Drinks',time:5,desc:'',available:true,sold:0},
+    [ts+'_9']:{name:'Gulab Jamun',price:70,cat:'Desserts',time:10,desc:'',available:true,sold:0},
+  };
+  const defCats={c1:'Starters',c2:'Main Course',c3:'Breads',c4:'Drinks',c5:'Desserts'};
+  let defTables={};for(let i=1;i<=tables;i++)defTables['t'+i]={id:i,status:'empty',waiterCall:false,billReq:false};
+  db.ref('hotels/'+hid).set({name,addr,phone,emoji,tableCount:tables,pins,createdAt:ts,staffEnabled:{manager:true,cook:true}});
+  db.ref('hotels/'+hid+'/menu').set(defMenu);
+  db.ref('hotels/'+hid+'/categories').set(defCats);
+  db.ref('hotels/'+hid+'/tables').set(defTables);
+  HID=hid;lsSave('last_hid',hid);
+  showSuccessScreen(hid,name,tables,emoji);
+}
+function showSuccessScreen(hid,name,tables,emoji){
+  showPage('pg-success');
+  const base=location.origin+location.pathname;
+  const custUrl=base+'?hotel='+hid+'&c=1';
+  const staffUrl=base+'?hotel='+hid;
+  g('success-content').innerHTML=`
+    <p style="color:var(--text2);font-size:13px;margin-bottom:1rem">${emoji} ${name}</p>
+    <div class="card" style="text-align:left;margin:0 0 12px">
+      <div class="card-title">📱 Customer Link</div>
+      <p style="font-size:11px;color:var(--text3);margin-bottom:6px">यह link customers को दें — वो table चुनकर order करेंगे (Gmail की ज़रूरत नहीं)</p>
+      <div class="url-box">${custUrl}</div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="copyText('${custUrl}')">📋 Copy</button>
+    </div>
+    <div class="card" style="text-align:left;margin:0 0 12px">
+      <div class="card-title">👑 Staff / Owner Login</div>
+      <p style="font-size:11px;color:var(--text3);margin-bottom:6px">मालिक, Manager, Cook, Waiter — सब इस link से login करें (PIN से, Gmail ज़रूरी नहीं)</p>
+      <div class="url-box">${staffUrl}</div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="copyText('${staffUrl}')">📋 Copy</button>
+    </div>
+    <button class="btn btn-red btn-block" style="font-size:15px;padding:14px" onclick="window.location='${staffUrl}'">Admin Panel खोलो →</button>`;
+}
+
+// ══════════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════════
+function addNotif(msg){
+  const nid='n'+Date.now();
+  db.ref('hotels/'+HID+'/notifications/'+nid).set({msg,time:new Date().toLocaleTimeString('hi-IN',{hour:'2-digit',minute:'2-digit'}),ts:Date.now()});
+}
+function clrNotifs(){db.ref('hotels/'+HID+'/notifications').remove();toast(t('Notifications clear!','Notifications cleared!'));}
+
+// Close modals on background click
+document.querySelectorAll('.modalbg').forEach(bg=>{bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('on');});});
+
+// Auto-refresh cook & waiter every 30s
+setInterval(()=>{if(currentTab==='cook'||currentTab==='waiter')renderTab(currentTab);},30000);
+
+// ══════════════════════════════════════════════════════
+//  START
+// ══════════════════════════════════════════════════════
+route();
+</script>
+</body>
+</html>
